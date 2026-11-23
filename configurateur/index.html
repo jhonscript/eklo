@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Éklo · Lettres gonflées</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#0d1716);--ink:light-dark(#10211f,#e6f2f0);--mut:light-dark(#4f6a66,#9db8b3);--pan:light-dark(#f3f9f8,#14221f);--line:light-dark(#d3e6e2,#26403b);--teal:light-dark(#0c8a84,#3cc4bb);--ok:light-dark(#11804a,#4fd38c);--warn:light-dark(#b4560b,#f3a450)}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Figtree,system-ui,sans-serif}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px max(4vw,16px);border-bottom:1px solid var(--line)}
+.brand{font:700 22px Fredoka,sans-serif;color:var(--teal)}
+.brand small{font:500 14px Figtree,sans-serif;color:var(--mut);margin-left:8px}
+.lang{display:flex;gap:4px}
+.lang button{font:700 13px Figtree,sans-serif;padding:6px 10px;border-radius:8px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.lang button[aria-pressed=true]{background:var(--teal);border-color:var(--teal);color:#fff}
+.wrap{max-width:1200px;margin:0 auto;padding:22px max(4vw,16px) 40px}
+h1{font:700 clamp(28px,4vw,40px)/1.1 Fredoka,sans-serif;margin:0 0 6px}
+.lead{color:var(--mut);margin:0 0 22px}
+.grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:28px;align-items:start}
+.stage{position:sticky;top:12px}
+#view{position:relative;aspect-ratio:4/3;border-radius:20px;border:1px solid var(--line);overflow:hidden;background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--teal) 9%,var(--bg)),var(--bg) 72%)}
+#view canvas{position:absolute;inset:0;width:100%;height:100%}
+#busy{position:absolute;top:10px;left:10px;background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:3px 11px;font-size:13px;font-weight:600}
+.hint{font-size:13px;color:var(--mut);margin:8px 2px 0}
+.step{padding:16px 0;border-bottom:1px solid var(--line)}
+.step:first-child{padding-top:0}
+.st{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}
+.st b{font:600 19px Fredoka,sans-serif}
+.st span{font:700 12px Figtree,sans-serif;color:var(--teal);letter-spacing:.06em}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{font:600 15px Figtree,sans-serif;min-height:46px;padding:6px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;text-align:left}
+.seg button small{display:block;font-weight:500;font-size:12.5px;color:var(--mut)}
+.seg button[aria-pressed=true]{border-color:var(--teal);box-shadow:0 0 0 1.5px var(--teal) inset}
+input[type=text]{width:100%;font:600 22px Fredoka,sans-serif;letter-spacing:.04em;text-transform:uppercase;padding:12px 16px;border:1.5px solid var(--line);border-radius:14px;background:var(--bg);color:var(--ink)}
+input:focus-visible,button:focus-visible{outline:3px solid color-mix(in srgb,var(--teal) 55%,transparent);outline-offset:2px}
+.msg{font-size:13.5px;margin-top:6px;color:var(--mut)}
+.msg.w{color:var(--warn);font-weight:600}
+.letters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.letters button{min-width:44px;height:48px;padding:0 10px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font:700 20px Fredoka,sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px}
+.letters button i{width:14px;height:14px;border-radius:50%;box-shadow:0 0 0 1px #0003}
+.letters button[aria-pressed=true]{border-color:var(--teal);box-shadow:0 0 0 1.5px var(--teal) inset}
+.letters .all{font:600 14px Figtree,sans-serif}
+.sw{display:flex;flex-wrap:wrap;gap:10px}
+.sw button{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;padding:0;cursor:pointer;color:var(--ink);font:500 12px Figtree,sans-serif;width:56px}
+.sw button i{width:40px;height:40px;border-radius:50%;box-shadow:0 0 0 1.5px var(--line);border:3px solid var(--bg)}
+.sw button[aria-pressed=true] i{box-shadow:0 0 0 3px var(--teal)}
+.sum{margin-top:18px;padding:18px;border-radius:18px;background:var(--pan);border:1px solid var(--line)}
+.line{display:flex;justify-content:space-between;gap:12px;margin:4px 0}
+.line.tot{font:700 22px Fredoka,sans-serif;margin-top:8px}
+.btn{display:block;width:100%;margin-top:14px;font:700 16px Figtree,sans-serif;padding:14px;border-radius:14px;border:0;background:var(--teal);color:#fff;cursor:pointer}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.alt{background:var(--bg);color:var(--teal);border:1.5px solid var(--teal)}
+.small{font-size:13px;color:var(--mut);margin:10px 0 0}
+.tag{display:inline-block;font:700 11.5px Figtree,sans-serif;padding:2px 8px;border-radius:99px;background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+footer{border-top:1px solid var(--line);padding:16px max(4vw,16px);color:var(--mut);font-size:13.5px;text-align:center}
+@media(max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}.stage{position:static}}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head>
+<body>
+<header>
+  <div class="brand">Éklo<small data-t="atelier"></small></div>
+  <div class="lang" id="lang"><button type="button" data-l="fr">FR</button><button type="button" data-l="en">EN</button></div>
+</header>
+<div class="wrap">
+  <h1 data-t="title"></h1>
+  <p class="lead" data-t="lead"></p>
+  <div class="grid">
+    <div class="stage">
+      <div id="view"><div id="busy" hidden data-t="busy"></div></div>
+      <p class="hint" data-t="hint"></p>
+    </div>
+    <div>
+      <div class="step">
+        <div class="st"><span>01</span><b data-t="size"></b></div>
+        <div class="seg" id="sizes"></div>
+      </div>
+      <div class="step">
+        <div class="st"><span>02</span><b data-t="name"></b></div>
+        <input type="text" id="txt" autocomplete="off" spellcheck="false" maxlength="30" aria-describedby="txtmsg">
+        <div class="msg" id="txtmsg"></div>
+      </div>
+      <div class="step">
+        <div class="st"><span>03</span><b data-t="colour"></b></div>
+        <div class="letters" id="letters"></div>
+        <div class="sw" id="sw"></div>
+      </div>
+      <div class="step">
+        <div class="st"><span>04</span><b data-t="finish"></b></div>
+        <div class="seg" id="tex"></div>
+      </div>
+      <div class="sum" id="sum"></div>
+    </div>
+  </div>
+</div>
+<footer data-t="foot"></footer>
+
+<script type="module">
+import { buildLetters, createViewer } from '../lib/gonfle.js';
+import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, orderQuery, priceOf } from '../lib/catalogue.js';
+
+const T = {
+  fr: {
+    atelier:'Atelier créatif', title:'Votre prénom en lettres gonflées', lead:'Imprimées en 3D à Sherbrooke, à la hauteur exacte choisie. Choisissez une couleur par lettre ou une seule pour tout le prénom.',
+    busy:'Création de l’aperçu…', hint:'Faites glisser pour tourner l’aperçu. Les couleurs à l’écran sont indicatives.',
+    size:'Hauteur des lettres', perLetter:'/ lettre', name:'Prénom', placeholder:'Ex. : LÉA',
+    nameMsg:n=>`${n} lettre(s) · jusqu’à ${CATALOGUE.maxLetters} lettres · les espaces sont gratuits`, tooMany:`Maximum ${CATALOGUE.maxLetters} lettres : les lettres en trop ne sont pas comptées.`, badChars:c=>`Caractères non disponibles : ${c}`,
+    colour:'Couleurs', all:'Toutes les lettres', finish:'Finition', texNote:{lisse:'Surface lisse et satinée', texture:'Surface mate au toucher granuleux'},
+    letters:(n,u)=>`${n} lettre(s) × ${u}`, subtotal:'Sous-total', taxShip:'Taxes et livraison calculées au paiement, selon votre province. Ramassage gratuit à Sherbrooke.',
+    order:'Commander', soon:'Paiement en ligne bientôt', copy:'Copier le lien de ma création', copied:'Lien copié ✓',
+    interim:'En attendant : copiez le lien de votre création et envoyez-le-nous en message sur Instagram @ekloatelier. On vous confirme le prix et le délai.',
+    example:'Prix d’exemple', empty:'Écrivez un prénom pour voir l’aperçu.',
+    foot:'Éklo Atelier créatif · Sherbrooke, Québec · Livraison partout au Canada', each:h=>`Chaque lettre mesure exactement ${h} cm de haut.`,
+  },
+  en: {
+    atelier:'Creative studio', title:'Your name in puffy letters', lead:'3D printed in Sherbrooke, at the exact height you choose. Pick a colour for each letter, or one colour for the whole name.',
+    busy:'Building preview…', hint:'Drag to rotate the preview. On-screen colours are a guide only.',
+    size:'Letter height', perLetter:'/ letter', name:'Name', placeholder:'E.g. LEA',
+    nameMsg:n=>`${n} letter(s) · up to ${CATALOGUE.maxLetters} letters · spaces are free`, tooMany:`Maximum ${CATALOGUE.maxLetters} letters: extra letters are not counted.`, badChars:c=>`Characters not available: ${c}`,
+    colour:'Colours', all:'All letters', finish:'Finish', texNote:{lisse:'Smooth, satin surface', texture:'Matte surface with a grainy feel'},
+    letters:(n,u)=>`${n} letter(s) × ${u}`, subtotal:'Subtotal', taxShip:'Taxes and shipping calculated at checkout, based on your province. Free pickup in Sherbrooke.',
+    order:'Order', soon:'Online checkout coming soon', copy:'Copy the link to my design', copied:'Link copied ✓',
+    interim:'In the meantime: copy the link to your design and send it to us on Instagram @ekloatelier. We will confirm the price and timing.',
+    example:'Sample price', empty:'Type a name to see the preview.',
+    foot:'Éklo Atelier créatif · Sherbrooke, Quebec · Shipping across Canada', each:h=>`Each letter is exactly ${h} cm tall.`,
+  },
+};
+const $ = id => document.getElementById(id);
+const params = new URLSearchParams(location.search);
+let lang = params.get('lang') || (navigator.language || 'fr').slice(0,2);
+if (!T[lang]) lang = 'en';
+const O = params.get('t') ? parseOrder(location.search) : fitColors({ text:'LÉA', h:150, colors:['rose','ciel','or'], tex:'lisse' });
+let sel = 'all';
+const money = v => new Intl.NumberFormat(lang === 'fr' ? 'fr-CA' : 'en-CA', { style:'currency', currency:CATALOGUE.currency }).format(v);
+const cm = mm => (mm/10).toLocaleString(lang === 'fr' ? 'fr-CA' : 'en-CA');
+const viewer = createViewer($('view'));
+
+function texts(){
+  const t = T[lang];
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-t]').forEach(el => { const v = t[el.dataset.t]; if (typeof v === 'string') el.textContent = v; });
+  $('txt').placeholder = t.placeholder;
+  $('lang').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.l === lang));
+}
+function drawSizes(){
+  const t = T[lang];
+  $('sizes').innerHTML = CATALOGUE.sizes.map(s => `<button type="button" data-h="${s.h}" aria-pressed="${s.h === O.h}">${cm(s.h)} cm<small>${money(s.price)} ${t.perLetter}</small></button>`).join('');
+}
+function drawText(){
+  const t = T[lang], chars = lettersOf(O.text), bad = [...new Set(chars.filter(c => !isAllowed(c)))];
+  const msg = bad.length ? t.badChars(bad.join(' ')) : chars.length > CATALOGUE.maxLetters ? t.tooMany : t.nameMsg(chars.length);
+  $('txtmsg').textContent = msg; $('txtmsg').className = 'msg' + (bad.length || chars.length > CATALOGUE.maxLetters ? ' w' : '');
+}
+function drawLetters(){
+  const t = T[lang], chars = lettersOf(O.text);
+  if (sel !== 'all' && sel >= chars.length) sel = 'all';
+  $('letters').innerHTML = `<button type="button" class="all" data-i="all" aria-pressed="${sel === 'all'}">${t.all}</button>` +
+    chars.map((c,i) => `<button type="button" data-i="${i}" aria-pressed="${sel === i}" aria-label="${c} · ${colorById(O.colors[i])[lang]}">${c}<i style="background:${colorById(O.colors[i]).hex}"></i></button>`).join('');
+  const cur = sel === 'all' ? (O.colors.every(c => c === O.colors[0]) ? O.colors[0] : null) : O.colors[sel];
+  $('sw').innerHTML = CATALOGUE.colors.map(c => `<button type="button" data-c="${c.id}" aria-pressed="${c.id === cur}"><i style="background:${c.hex}"></i>${c[lang]}</button>`).join('');
+}
+function drawTex(){
+  const t = T[lang];
+  $('tex').innerHTML = CATALOGUE.textures.map(x => `<button type="button" data-x="${x.id}" aria-pressed="${x.id === O.tex}">${x[lang]}<small>${t.texNote[x.id]}</small></button>`).join('');
+}
+function drawSum(){
+  const t = T[lang], p = priceOf(O);
+  $('sum').innerHTML = !p.n ? `<p class="small" style="margin:0">${t.empty}</p>` : `
+    <div class="line"><span>${t.letters(Math.min(p.n, CATALOGUE.maxLetters), money(p.unit))}</span><span>${money(Math.min(p.n, CATALOGUE.maxLetters) * p.unit)}</span></div>
+    <div class="line tot"><span>${t.subtotal}</span><span>${money(Math.min(p.n, CATALOGUE.maxLetters) * p.unit)}</span></div>
+    <p class="small"><span class="tag">${t.example}</span> ${t.each(cm(O.h))} ${t.taxShip}</p>
+    <button class="btn" type="button" disabled title="${t.soon}">${t.order} · ${t.soon}</button>
+    <button class="btn alt" type="button" id="copy">${t.copy}</button>
+    <p class="small">${t.interim}</p>`;
+}
+function syncURL(){ const q = orderQuery(O) + '&lang=' + lang; history.replaceState(null, '', '?' + q); }
+function all(){ texts(); drawSizes(); drawText(); drawLetters(); drawTex(); drawSum(); }
+
+let run = 0, timer = 0, LET = [];
+function schedule(){ clearTimeout(timer); timer = setTimeout(preview, 200); syncURL(); }
+async function preview(){
+  const my = ++run;
+  const chars = lettersOf(O.text).filter(isAllowed).slice(0, CATALOGUE.maxLetters);
+  $('busy').hidden = false;
+  const L = await buildLetters(chars, CATALOGUE.font, { h:O.h, puff:CATALOGUE.puff, fat:CATALOGUE.fat, q:CATALOGUE.q }, () => my !== run);
+  if (!L) return;
+  LET = L; paint(); $('busy').hidden = true;
+}
+function paint(){
+  // couleur de chaque lettre affichée, en sautant les caractères non disponibles
+  const all = lettersOf(O.text), hexes = [];
+  all.forEach((c,i) => { if (isAllowed(c) && hexes.length < CATALOGUE.maxLetters) hexes.push(colorById(O.colors[i]).hex); });
+  viewer.show(LET, hexes, { textured: O.tex === 'texture' });
+}
+
+$('lang').onclick = e => { const b = e.target.closest('button'); if (!b) return; lang = b.dataset.l; all(); syncURL(); };
+$('sizes').onclick = e => { const b = e.target.closest('button'); if (!b) return; O.h = +b.dataset.h; drawSizes(); drawSum(); schedule(); };
+$('txt').oninput = e => { O.text = e.target.value.toUpperCase(); fitColors(O); drawText(); drawLetters(); drawSum(); schedule(); };
+$('letters').onclick = e => { const b = e.target.closest('button'); if (!b) return; sel = b.dataset.i === 'all' ? 'all' : +b.dataset.i; drawLetters(); };
+$('sw').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (sel === 'all') O.colors = O.colors.map(() => b.dataset.c); else O.colors[sel] = b.dataset.c;
+  drawLetters(); paint(); syncURL();
+};
+$('tex').onclick = e => { const b = e.target.closest('button'); if (!b) return; O.tex = b.dataset.x; drawTex(); paint(); syncURL(); };
+$('sum').onclick = async e => {
+  if (e.target.id !== 'copy') return;
+  try { await navigator.clipboard.writeText(location.href); e.target.textContent = T[lang].copied; setTimeout(drawSum, 1800); }
+  catch { e.target.insertAdjacentHTML('afterend', `<input type="text" readonly value="${location.href.replace(/"/g,'&quot;')}" style="font:13px Figtree,sans-serif;text-transform:none;margin-top:8px" onfocus="this.select()">`); }
+};
+
+$('txt').value = O.text;
+all(); syncURL(); preview();
+window.__cfg = { O, get letters(){ return LET; } };
+</script>
+</body>
+</html>
