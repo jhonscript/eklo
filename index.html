@@ -4,11 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Éklo · Outils d'atelier</title>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@700&family=Figtree:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@700&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:light dark;--bg:light-dark(#ffffff,#0d1716);--ink:light-dark(#10211f,#e6f2f0);--mut:light-dark(#4f6a66,#9db8b3);--pan:light-dark(#eff7f6,#14221f);--line:light-dark(#d3e6e2,#26403b);--teal:light-dark(#0c8a84,#3cc4bb)}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Figtree,system-ui,sans-serif;padding:40px 16px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Figtree,system-ui,sans-serif;padding:24px 16px 40px}
 main{max-width:640px;margin:0 auto}
+.top{display:flex;justify-content:flex-end;margin-bottom:16px}
+.lang{display:flex;gap:4px}
+.lang button{font:700 13px Figtree,sans-serif;padding:6px 10px;border-radius:8px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.lang button[aria-pressed=true]{background:var(--teal);border-color:var(--teal);color:#fff}
 h1{font:700 32px Fredoka,sans-serif;color:var(--teal);margin:0 0 6px}
 p{color:var(--mut);margin:0 0 24px}
 a.card{display:block;text-decoration:none;color:inherit;background:var(--pan);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:12px}
@@ -19,11 +23,37 @@ a.card span{display:block;color:var(--mut);font-size:14.5px;margin-top:2px}
 </head>
 <body>
 <main>
-<h1>Éklo · Outils d'atelier</h1>
-<p>Générateurs de pièces personnalisées, à la mesure exacte, prêts pour Bambu Studio.</p>
-<a class="card" href="configurateur/"><b>Configurateur client · Lettres gonflées</b><span>Ce que voit le client : taille, prénom, couleur par lettre, finition, prix. Français et anglais.</span></a>
-<a class="card" href="lettres-gonflees/"><b>Atelier · Lettres gonflées</b><span>Pour l'atelier : coller le lien d'un client, vérifier les mesures, télécharger le 3MF.</span></a>
-<a class="card soon" aria-disabled="true"><b>Ornement de Noël avec prénoms</b><span>Bientôt.</span></a>
+<div class="top"><div class="lang" id="lang"></div></div>
+<h1 data-t="title"></h1>
+<p data-t="lead"></p>
+<a class="card" id="cfg" href="configurateur/"><b data-t="cfgT"></b><span data-t="cfgD"></span></a>
+<a class="card" id="tool" href="lettres-gonflees/"><b data-t="toolT"></b><span data-t="toolD"></span></a>
+<a class="card soon" aria-disabled="true"><b data-t="ornT"></b><span data-t="soon"></span></a>
 </main>
+<script type="module">
+import { detectLang, langSwitcher, applyTexts } from './lib/i18n.js?v=3';
+const T = {
+  fr: { title:'Éklo · Outils d’atelier', lead:'Pièces personnalisées à la mesure exacte, prêtes pour Bambu Studio.',
+        cfgT:'Configurateur client · Lettres gonflées', cfgD:'Ce que voit le client : taille, prénom, couleur par lettre, finition et prix.',
+        toolT:'Atelier · Lettres gonflées', toolD:'Pour l’atelier : coller le lien d’un client, vérifier les mesures, télécharger le 3MF.',
+        ornT:'Ornement de Noël avec prénoms', soon:'Bientôt.' },
+  en: { title:'Éklo · Workshop tools', lead:'Custom parts at the exact size, ready for Bambu Studio.',
+        cfgT:'Customer configurator · Puffy letters', cfgD:'What the customer sees: size, name, colour per letter, finish and price.',
+        toolT:'Workshop · Puffy letters', toolD:'For the workshop: paste a customer link, check the measurements, download the 3MF.',
+        ornT:'Christmas ornament with names', soon:'Coming soon.' },
+  es: { title:'Éklo · Herramientas del taller', lead:'Piezas personalizadas a la medida exacta, listas para Bambu Studio.',
+        cfgT:'Configurador para clientes · Letras infladas', cfgD:'Lo que ve el cliente: tamaño, nombre, color por letra, acabado y precio.',
+        toolT:'Taller · Letras infladas', toolD:'Para el taller: pegar el enlace de un cliente, verificar las medidas y descargar el 3MF.',
+        ornT:'Adorno navideño con nombres', soon:'Próximamente.' },
+};
+const go = lang => {
+  applyTexts(T[lang], lang); document.title = T[lang].title;
+  document.getElementById('cfg').href = `configurateur/?lang=${lang}`;
+  document.getElementById('tool').href = `lettres-gonflees/?lang=${lang}`;
+};
+const lang = detectLang();
+langSwitcher(document.getElementById('lang'), lang, go);
+go(lang);
+</script>
 </body>
 </html>

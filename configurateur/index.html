@@ -64,7 +64,7 @@ footer{border-top:1px solid var(--line);padding:16px max(4vw,16px);color:var(--m
 <body>
 <header>
   <div class="brand">Éklo<small data-t="atelier"></small></div>
-  <div class="lang" id="lang"><button type="button" data-l="fr">FR</button><button type="button" data-l="en">EN</button></div>
+  <div class="lang" id="lang"></div>
 </header>
 <div class="wrap">
   <h1 data-t="title"></h1>
@@ -100,8 +100,9 @@ footer{border-top:1px solid var(--line);padding:16px max(4vw,16px);color:var(--m
 <footer data-t="foot"></footer>
 
 <script type="module">
-import { buildLetters, createViewer } from '../lib/gonfle.js';
-import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, orderQuery, priceOf } from '../lib/catalogue.js';
+import { buildLetters, createViewer } from '../lib/gonfle.js?v=3';
+import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, orderQuery, priceOf, spacesBefore } from '../lib/catalogue.js?v=3';
+import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=3';
 
 const T = {
   fr: {
@@ -128,23 +129,33 @@ const T = {
     example:'Sample price', empty:'Type a name to see the preview.',
     foot:'Éklo Atelier créatif · Sherbrooke, Quebec · Shipping across Canada', each:h=>`Each letter is exactly ${h} cm tall.`,
   },
+  es: {
+    atelier:'Taller creativo', title:'Tu nombre en letras infladas', lead:'Impresas en 3D en Sherbrooke, a la altura exacta que elijas. Elige un color por letra o uno solo para todo el nombre.',
+    busy:'Creando la vista previa…', hint:'Arrastra para girar la vista previa. Los colores en pantalla son orientativos.',
+    size:'Altura de las letras', perLetter:'/ letra', name:'Nombre', placeholder:'Ej.: LÉA',
+    nameMsg:n=>`${n} letra(s) · hasta ${CATALOGUE.maxLetters} letras · los espacios son gratis`, tooMany:`Máximo ${CATALOGUE.maxLetters} letras: las que sobran no se cuentan.`, badChars:c=>`Caracteres no disponibles: ${c}`,
+    colour:'Colores', all:'Todas las letras', finish:'Acabado', texNote:{lisse:'Superficie lisa y satinada', texture:'Superficie mate, de tacto granulado'},
+    letters:(n,u)=>`${n} letra(s) × ${u}`, subtotal:'Subtotal', taxShip:'Los impuestos y el envío se calculan al pagar, según tu provincia. Retiro gratis en Sherbrooke.',
+    order:'Pedir', soon:'Pago en línea próximamente', copy:'Copiar el enlace de mi diseño', copied:'Enlace copiado ✓',
+    interim:'Mientras tanto: copia el enlace de tu diseño y envíanoslo por mensaje en Instagram @ekloatelier. Te confirmamos el precio y el plazo.',
+    example:'Precio de ejemplo', empty:'Escribe un nombre para ver la vista previa.',
+    foot:'Éklo Atelier créatif · Sherbrooke, Quebec · Envíos a todo Canadá', each:h=>`Cada letra mide exactamente ${h} cm de alto.`,
+  },
 };
 const $ = id => document.getElementById(id);
 const params = new URLSearchParams(location.search);
-let lang = params.get('lang') || (navigator.language || 'fr').slice(0,2);
-if (!T[lang]) lang = 'en';
+let lang = detectLang();
 const O = params.get('t') ? parseOrder(location.search) : fitColors({ text:'LÉA', h:150, colors:['rose','ciel','or'], tex:'lisse' });
 let sel = 'all';
-const money = v => new Intl.NumberFormat(lang === 'fr' ? 'fr-CA' : 'en-CA', { style:'currency', currency:CATALOGUE.currency }).format(v);
-const cm = mm => (mm/10).toLocaleString(lang === 'fr' ? 'fr-CA' : 'en-CA');
+const money = v => new Intl.NumberFormat(locale(lang), { style:'currency', currency:CATALOGUE.currency }).format(v);
+const cm = mm => (mm/10).toLocaleString(locale(lang));
 const viewer = createViewer($('view'));
 
 function texts(){
   const t = T[lang];
-  document.documentElement.lang = lang;
-  document.querySelectorAll('[data-t]').forEach(el => { const v = t[el.dataset.t]; if (typeof v === 'string') el.textContent = v; });
+  applyTexts(t, lang);
+  document.title = { fr:'Éklo · Lettres gonflées', en:'Éklo · Puffy letters', es:'Éklo · Letras infladas' }[lang];
   $('txt').placeholder = t.placeholder;
-  $('lang').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.l === lang));
 }
 function drawSizes(){
   const t = T[lang];
@@ -194,10 +205,10 @@ function paint(){
   // couleur de chaque lettre affichée, en sautant les caractères non disponibles
   const all = lettersOf(O.text), hexes = [];
   all.forEach((c,i) => { if (isAllowed(c) && hexes.length < CATALOGUE.maxLetters) hexes.push(colorById(O.colors[i]).hex); });
-  viewer.show(LET, hexes, { textured: O.tex === 'texture' });
+  viewer.show(LET, hexes, { textured: O.tex === 'texture', spaceBefore: spacesBefore(O.text, CATALOGUE.maxLetters) });
 }
 
-$('lang').onclick = e => { const b = e.target.closest('button'); if (!b) return; lang = b.dataset.l; all(); syncURL(); };
+langSwitcher($('lang'), lang, l => { lang = l; all(); syncURL(); });
 $('sizes').onclick = e => { const b = e.target.closest('button'); if (!b) return; O.h = +b.dataset.h; drawSizes(); drawSum(); schedule(); };
 $('txt').oninput = e => { O.text = e.target.value.toUpperCase(); fitColors(O); drawText(); drawLetters(); drawSum(); schedule(); };
 $('letters').onclick = e => { const b = e.target.closest('button'); if (!b) return; sel = b.dataset.i === 'all' ? 'all' : +b.dataset.i; drawLetters(); };
