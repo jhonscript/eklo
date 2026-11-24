@@ -82,6 +82,11 @@ td a{color:var(--teal);font-weight:600;cursor:pointer}
   <input type="range" id="puff" min="12" max="40" step="1">
   <label for="fat" id="fatv"></label>
   <input type="range" id="fat" min="0" max="16" step="1">
+  <label for="wide" id="widev"></label>
+  <input type="range" id="wide" min="70" max="110" step="1">
+  <label for="smooth" id="smoothv"></label>
+  <input type="range" id="smooth" min="0" max="12" step="1">
+  <button class="btn sm" id="reset" type="button" data-t="reset"></button>
   <label><span data-t="colours"></span> <small data-t="coloursHint"></small></label>
   <div class="lt" id="lt"></div>
   <div class="sw" id="col"></div>
@@ -101,9 +106,9 @@ td a{color:var(--teal);font-weight:600;cursor:pointer}
 </main>
 
 <script type="module">
-import { buildLetters, createViewer, threeMF, stl, save, TOL } from '../lib/gonfle.js?v=3';
-import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, spacesBefore } from '../lib/catalogue.js?v=3';
-import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=3';
+import { buildLetters, createViewer, threeMF, stl, save, TOL } from '../lib/gonfle.js?v=4';
+import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, spacesBefore } from '../lib/catalogue.js?v=4';
+import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=4';
 
 const T = {
   fr: {
@@ -112,6 +117,7 @@ const T = {
     loaded:'Chargée', badLink:'<span class="pill p-w">Lien non reconnu</span> Collez le lien complet copié depuis le configurateur.',
     letters:'Lettres', lettersHint:'(chaque lettre = une pièce)', font:'Police', height:'Hauteur exacte de chaque lettre',
     puff:(p,mm)=>`Gonflement : ${p} % de la hauteur (≈ ${mm} mm)`, fat:f=>f?`Rondeur : +${f} %`:'Rondeur : police d’origine',
+    wide:w=>`Largeur : ${w} %`, smooth:s=>s?`Lissage : ${s} %`:'Lissage : aucun', reset:'Revenir au style Éklo',
     colours:'Couleurs', coloursHint:'(choisir une lettre, puis la couleur)', all:'Toutes', finish:'Finition', quality:'Qualité du maillage', std:'Standard', fine:'Fine',
     dl:'Télécharger le 3MF (toutes les lettres)', preparing:'Préparation du 3MF…',
     note:'Le 3MF s’ouvre dans Bambu Studio avec une pièce par lettre, nommée avec sa couleur, posée à plat, dos plat sur le plateau. Si elles ne tiennent pas sur un plateau, utilisez « Disposer » (touche A). Les grammes affichés sont une estimation : le chiffre exact sort au tranchage.',
@@ -127,6 +133,7 @@ const T = {
     loaded:'Loaded', badLink:'<span class="pill p-w">Link not recognised</span> Paste the full link copied from the configurator.',
     letters:'Letters', lettersHint:'(each letter = one part)', font:'Font', height:'Exact height of each letter',
     puff:(p,mm)=>`Puffiness: ${p}% of height (≈ ${mm} mm)`, fat:f=>f?`Roundness: +${f}%`:'Roundness: original font',
+    wide:w=>`Width: ${w}%`, smooth:s=>s?`Smoothing: ${s}%`:'Smoothing: none', reset:'Back to Éklo style',
     colours:'Colours', coloursHint:'(pick a letter, then the colour)', all:'All', finish:'Finish', quality:'Mesh quality', std:'Standard', fine:'Fine',
     dl:'Download 3MF (all letters)', preparing:'Preparing 3MF…',
     note:'The 3MF opens in Bambu Studio with one part per letter, named with its colour, lying flat with the flat back on the plate. If they do not fit on one plate, use “Arrange” (A key). Grams shown are an estimate: the exact figure comes from slicing.',
@@ -142,6 +149,7 @@ const T = {
     loaded:'Cargado', badLink:'<span class="pill p-w">Enlace no reconocido</span> Pega el enlace completo copiado del configurador.',
     letters:'Letras', lettersHint:'(cada letra = una pieza)', font:'Tipografía', height:'Altura exacta de cada letra',
     puff:(p,mm)=>`Inflado: ${p} % de la altura (≈ ${mm} mm)`, fat:f=>f?`Redondez: +${f} %`:'Redondez: tipografía original',
+    wide:w=>`Ancho: ${w} %`, smooth:s=>s?`Suavizado: ${s} %`:'Suavizado: ninguno', reset:'Volver al estilo Éklo',
     colours:'Colores', coloursHint:'(elige una letra y luego el color)', all:'Todas', finish:'Acabado', quality:'Calidad de la malla', std:'Estándar', fine:'Fina',
     dl:'Descargar el 3MF (todas las letras)', preparing:'Preparando el 3MF…',
     note:'El 3MF se abre en Bambu Studio con una pieza por letra, nombrada con su color, acostada con el dorso plano sobre la cama. Si no caben en una placa, usa “Organizar” (tecla A). Los gramos son un estimado: el dato exacto sale al rebanar.',
@@ -155,14 +163,15 @@ const T = {
 
 const $ = id => document.getElementById(id);
 const FONTS = [
+  {id:'nunito',  label:'Nunito Black (Éklo)', f:'Nunito', w:900},
   {id:'fredoka', label:'Fredoka', f:'Fredoka', w:700},
   {id:'baloo',   label:'Baloo 2', f:'Baloo 2', w:800},
-  {id:'nunito',  label:'Nunito Black', f:'Nunito', w:900},
   {id:'sniglet', label:'Sniglet', f:'Sniglet', w:800},
   {id:'rubik',   label:'Rubik Black', f:'Rubik', w:900},
 ];
 let lang = detectLang(), t = T[lang];
-const S = { text:'EKLO', font:'fredoka', h:150, puff:CATALOGUE.puff, fat:CATALOGUE.fat, q:'std', colors:[], tex:'lisse' };
+const STYLE = () => ({ font:'nunito', puff:CATALOGUE.puff, fat:CATALOGUE.fat, wide:CATALOGUE.wide, smooth:CATALOGUE.smooth });
+const S = { text:'EKLO', h:150, q:'std', colors:[], tex:'lisse', ...STYLE() };
 fitColors(S);
 let sel = 'all';
 const fmt = (n,d=1) => n.toLocaleString(locale(lang), { minimumFractionDigits:d, maximumFractionDigits:d });
@@ -185,8 +194,11 @@ function drawColors(){
 }
 $('lt').onclick = e => { const b=e.target.closest('button'); if(!b) return; sel = b.dataset.i==='all' ? 'all' : +b.dataset.i; drawColors(); };
 $('col').onclick = e => { const b=e.target.closest('button'); if(!b) return; if (sel==='all') S.colors = S.colors.map(()=>b.dataset.c); else S.colors[sel] = b.dataset.c; drawColors(); paint(); renderTable(); renderProd(); };
-const labels = () => { $('puffv').textContent = t.puff(S.puff, fmt(S.h*S.puff/100,0)); $('fatv').textContent = t.fat(S.fat); };
-function syncInputs(){ $('txt').value=S.text; $('h').value=S.h; $('puff').value=S.puff; $('fat').value=S.fat; $('font').value=S.font; drawHp(); drawTex(); drawQ(); drawColors(); labels(); }
+const labels = () => { $('puffv').textContent = t.puff(S.puff, fmt(S.h*S.puff/100,0)); $('fatv').textContent = t.fat(S.fat); $('widev').textContent = t.wide(S.wide); $('smoothv').textContent = t.smooth(S.smooth); };
+function syncInputs(){ $('txt').value=S.text; $('h').value=S.h; $('puff').value=S.puff; $('fat').value=S.fat; $('wide').value=S.wide; $('smooth').value=S.smooth; $('font').value=S.font; drawHp(); drawTex(); drawQ(); drawColors(); labels(); }
+$('wide').oninput = e => { S.wide=+e.target.value; labels(); schedule(); };
+$('smooth').oninput = e => { S.smooth=+e.target.value; labels(); schedule(); };
+$('reset').onclick = () => { Object.assign(S, STYLE()); syncInputs(); schedule(); };
 $('txt').oninput = e => { S.text = e.target.value.toUpperCase(); fitColors(S); drawColors(); schedule(); };
 $('font').onchange = e => { S.font = e.target.value; schedule(); };
 $('h').oninput = e => { const v=+e.target.value; if(v>0){ S.h=v; drawHp(); labels(); schedule(); } };
@@ -199,7 +211,7 @@ $('load').onclick = () => {
     const u = new URL($('link').value.trim());
     if (!u.searchParams.get('t')) throw 0;
     const o = parseOrder(u.search);
-    Object.assign(S, { text:o.text, h:o.h, colors:o.colors, tex:o.tex, font:'fredoka', puff:CATALOGUE.puff, fat:CATALOGUE.fat });
+    Object.assign(S, { text:o.text, h:o.h, colors:o.colors, tex:o.tex, ...STYLE() });
     sel = 'all'; syncInputs(); schedule(); loadedMsg = o;
   } catch { loadedMsg = 'bad'; }
   drawLinkMsg();
@@ -214,7 +226,7 @@ async function build(){
   IDX = all.map((c,i)=>isAllowed(c)?i:-1).filter(i=>i>=0);
   BAD = all.filter(c=>!isAllowed(c));
   $('busy').hidden = false; $('dl3mf').disabled = true;
-  const L = await buildLetters(IDX.map(i=>all[i]), font, { h:S.h, puff:S.puff, fat:S.fat, q:S.q }, () => my !== run);
+  const L = await buildLetters(IDX.map(i=>all[i]), font, { h:S.h, puff:S.puff, fat:S.fat, wide:S.wide, smooth:S.smooth, q:S.q }, () => my !== run);
   if (!L) return;
   LET = L; paint(); renderTable(); renderProd(); renderStatus();
   $('busy').hidden = true;
