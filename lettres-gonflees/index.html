@@ -6,7 +6,7 @@
 <title>Éklo · Atelier lettres gonflées</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Coiny&family=Cherry+Bomb+One&family=DynaPuff:wght@700&family=Bagel+Fat+One&family=Gluten:wght@900&family=Fredoka:wght@700&family=Baloo+2:wght@800&family=Nunito:wght@900&family=Sniglet:wght@800&family=Rubik:wght@900&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Coiny&family=Cherry+Bomb+One&family=DynaPuff:wght@700&family=Bagel+Fat+One&family=Gluten:wght@900&family=Fredoka:wght@700&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:light dark;--bg:light-dark(#ffffff,#0d1716);--ink:light-dark(#10211f,#e6f2f0);--mut:light-dark(#4f6a66,#9db8b3);--pan:light-dark(#eff7f6,#14221f);--line:light-dark(#d3e6e2,#26403b);--teal:light-dark(#0c8a84,#3cc4bb);--ok:light-dark(#11804a,#4fd38c);--warn:light-dark(#b4560b,#f3a450)}
 *{box-sizing:border-box;min-width:0}
@@ -176,16 +176,12 @@ const T = {
 
 const $ = id => document.getElementById(id);
 const FONTS = [
-  {id:'coiny',   label:'Coiny (Éklo)', f:'Coiny', w:400},
+  // Les 5 polices « ballon » gratuites (licence OFL, usage commercial permis) entre lesquelles Éklo choisit
+  {id:'coiny',   label:'Coiny', f:'Coiny', w:400},
   {id:'cherry',  label:'Cherry Bomb One', f:'Cherry Bomb One', w:400},
   {id:'dynapuff',label:'DynaPuff', f:'DynaPuff', w:700},
   {id:'bagel',   label:'Bagel Fat One', f:'Bagel Fat One', w:400},
   {id:'gluten',  label:'Gluten', f:'Gluten', w:900},
-  {id:'nunito',  label:'Nunito Black', f:'Nunito', w:900},
-  {id:'fredoka', label:'Fredoka', f:'Fredoka', w:700},
-  {id:'baloo',   label:'Baloo 2', f:'Baloo 2', w:800},
-  {id:'sniglet', label:'Sniglet', f:'Sniglet', w:800},
-  {id:'rubik',   label:'Rubik Black', f:'Rubik', w:900},
 ];
 let lang = detectLang(), t = T[lang];
 const STYLE = () => ({ font:'coiny', puff:CATALOGUE.puff, fat:CATALOGUE.fat, wide:CATALOGUE.wide, smooth:CATALOGUE.smooth });
