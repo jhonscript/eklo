@@ -116,9 +116,9 @@ td a{color:var(--teal);font-weight:600;cursor:pointer}
 </main>
 
 <script type="module">
-import { buildLetters, createViewer, threeMF, stl, save, zip, TOL } from '../lib/gonfle.js?v=6';
-import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, spacesBefore } from '../lib/catalogue.js?v=6';
-import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=6';
+import { buildLetters, createViewer, threeMF, stl, save, zip, TOL } from '../lib/gonfle.js?v=7';
+import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, spacesBefore } from '../lib/catalogue.js?v=7';
+import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=7';
 
 const T = {
   fr: {
@@ -177,14 +177,14 @@ const T = {
 const $ = id => document.getElementById(id);
 const FONTS = [
   // Les 5 polices « ballon » gratuites (licence OFL, usage commercial permis) entre lesquelles Éklo choisit
-  {id:'coiny',   label:'Coiny', f:'Coiny', w:400},
   {id:'cherry',  label:'Cherry Bomb One', f:'Cherry Bomb One', w:400},
+  {id:'coiny',   label:'Coiny', f:'Coiny', w:400},
   {id:'dynapuff',label:'DynaPuff', f:'DynaPuff', w:700},
   {id:'bagel',   label:'Bagel Fat One', f:'Bagel Fat One', w:400},
   {id:'gluten',  label:'Gluten', f:'Gluten', w:900},
 ];
 let lang = detectLang(), t = T[lang];
-const STYLE = () => ({ font:'coiny', puff:CATALOGUE.puff, fat:CATALOGUE.fat, wide:CATALOGUE.wide, smooth:CATALOGUE.smooth });
+const STYLE = () => ({ font:'cherry', puff:CATALOGUE.puff, fat:CATALOGUE.fat, wide:CATALOGUE.wide, smooth:CATALOGUE.smooth });
 const S = { text:'EKLO', h:150, q:'std', colors:[], tex:'lisse', ...STYLE() };
 fitColors(S);
 let sel = 'all';
