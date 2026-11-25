@@ -116,9 +116,10 @@ td a{color:var(--teal);font-weight:600;cursor:pointer}
 </main>
 
 <script type="module">
-import { buildLetters, createViewer, threeMF, stl, save, zip, TOL } from '../lib/gonfle.js?v=8';
-import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, spacesBefore } from '../lib/catalogue.js?v=8';
-import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=8';
+import { buildLetters, createViewer, threeMF, stl, save, zip, TOL } from '../lib/gonfle.js?v=9';
+import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, spacesBefore } from '../lib/catalogue.js?v=9';
+import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=9';
+import { EKLO_BULLE, EKLO_BULLE_GONFLEE } from '../lib/eklo-bulle.js?v=9';
 
 const T = {
   fr: {
@@ -177,7 +178,8 @@ const T = {
 const $ = id => document.getElementById(id);
 const FONTS = [
   // Les 5 polices « ballon » gratuites (licence OFL, usage commercial permis) entre lesquelles Éklo choisit
-  {id:'eklo',    label:'Éklo Bulle (original)', ...CATALOGUE.font, fat:0},
+  {id:'eklo',    label:'Éklo Bulle Gonflée (original)', ...EKLO_BULLE_GONFLEE},
+  {id:'eklo-fin',label:'Éklo Bulle (original, plus fine)', ...EKLO_BULLE},
   {id:'cherry',  label:'Cherry Bomb One', f:'Cherry Bomb One', w:400, fat:4},
   {id:'coiny',   label:'Coiny', f:'Coiny', w:400, fat:4},
   {id:'dynapuff',label:'DynaPuff', f:'DynaPuff', w:700, fat:4},
@@ -216,7 +218,8 @@ $('smooth').oninput = e => { S.smooth=+e.target.value; labels(); schedule(); };
 $('reset').onclick = () => { Object.assign(S, STYLE()); syncInputs(); schedule(); };
 $('txt').oninput = e => { S.text = e.target.value.toUpperCase(); fitColors(S); drawColors(); schedule(); };
 // chaque police a sa « rondeur » conseillée (Éklo Bulle : 0, le trait donne déjà la graisse)
-$('font').onchange = e => { S.font = e.target.value; const f = FONTS.find(x=>x.id===S.font); if (f.fat != null) S.fat = f.fat; syncInputs(); schedule(); };
+// chaque police apporte ses réglages conseillés (alphabets Éklo : font.style ; polices Google : rondeur 4 %)
+$('font').onchange = e => { S.font = e.target.value; const f = FONTS.find(x=>x.id===S.font); Object.assign(S, f.style || { puff:25, fat:f.fat ?? 4, wide:100, smooth:0 }); syncInputs(); schedule(); };
 $('h').oninput = e => { const v=+e.target.value; if(v>0){ S.h=v; drawHp(); labels(); schedule(); } };
 $('puff').oninput = e => { S.puff=+e.target.value; labels(); schedule(); };
 $('fat').oninput = e => { S.fat=+e.target.value; labels(); schedule(); };
