@@ -57,6 +57,16 @@ td a{color:var(--teal);font-weight:600;cursor:pointer}
 #prod{margin:0 20px 20px;padding:12px 14px;border-radius:12px;background:var(--pan);border:1px solid var(--line);font-size:14px}
 #prod:empty{display:none}
 #prod b{font-family:Fredoka,sans-serif}
+#prod ol{list-style:none;margin:10px 0 6px;padding:0}
+#prod li{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line)}
+#prod li.done{opacity:.5}
+#prod li.done .ch{text-decoration:line-through}
+#prod li input{width:20px;height:20px;accent-color:var(--teal);margin:0}
+#prod li .n{color:var(--mut);font-size:13px;min-width:2.6em}
+#prod li .ch{font:700 20px Fredoka,sans-serif;min-width:1.2em}
+#prod li .g{color:var(--mut);margin-left:auto}
+#prod li a,td a{color:var(--teal);font-weight:700;cursor:pointer}
+#prod .sp{color:var(--mut);font-size:13.5px}
 @media(max-width:820px){main{grid-template-columns:minmax(0,1fr)}aside{border-right:0;border-bottom:1px solid var(--line)}#view{min-height:320px}}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
@@ -94,7 +104,7 @@ td a{color:var(--teal);font-weight:600;cursor:pointer}
   <div class="row" id="tex"></div>
   <label data-t="quality"></label>
   <div class="row" id="q"></div>
-  <button class="btn" id="dl3mf" disabled data-t="dl"></button>
+  <button class="btn" id="dl3mf" disabled></button>
   <p class="note" data-t="note"></p>
 </aside>
 <section>
@@ -106,9 +116,9 @@ td a{color:var(--teal);font-weight:600;cursor:pointer}
 </main>
 
 <script type="module">
-import { buildLetters, createViewer, threeMF, stl, save, TOL } from '../lib/gonfle.js?v=4';
-import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, spacesBefore } from '../lib/catalogue.js?v=4';
-import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=4';
+import { buildLetters, createViewer, threeMF, stl, save, zip, TOL } from '../lib/gonfle.js?v=5';
+import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, spacesBefore } from '../lib/catalogue.js?v=5';
+import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=5';
 
 const T = {
   fr: {
@@ -119,8 +129,9 @@ const T = {
     puff:(p,mm)=>`Gonflement : ${p} % de la hauteur (≈ ${mm} mm)`, fat:f=>f?`Rondeur : +${f} %`:'Rondeur : police d’origine',
     wide:w=>`Largeur : ${w} %`, smooth:s=>s?`Lissage : ${s} %`:'Lissage : aucun', reset:'Revenir au style Éklo',
     colours:'Couleurs', coloursHint:'(choisir une lettre, puis la couleur)', all:'Toutes', finish:'Finition', quality:'Qualité du maillage', std:'Standard', fine:'Fine',
-    dl:'Télécharger le 3MF (toutes les lettres)', preparing:'Préparation du 3MF…',
-    note:'Le 3MF s’ouvre dans Bambu Studio avec une pièce par lettre, nommée avec sa couleur, posée à plat, dos plat sur le plateau. Si elles ne tiennent pas sur un plateau, utilisez « Disposer » (touche A). Les grammes affichés sont une estimation : le chiffre exact sort au tranchage.',
+    dl:n=>`Télécharger les ${n} lettres (.zip, un 3MF par lettre)`, preparing:'Préparation des fichiers…',
+    note:'Chaque lettre a son propre 3MF, centrée sur le plateau, dos plat en bas, nommée avec sa couleur : comme vous imprimez, une lettre à la fois. Les grammes affichés sont une estimation : le chiffre exact sort au tranchage.',
+    queue:'File d’impression', printed:(d,n)=>`${d}/${n} imprimée(s)`, spools:'Bobines à prévoir', markDone:'Marquer comme imprimée',
     busy:'Génération…', thLetter:'Lettre', thWidth:'Largeur', thHeight:'Hauteur', thThick:'Épaisseur', thFil:'Filament ~', thCheck:'Contrôle', thColour:'Couleur · fichier',
     ok:'Mesure ✓ · 1 pièce ✓', check:'À vérifier', valid:'Validé', ignored:'Ignoré', empty:'Écrivez au moins une lettre.',
     iHeight:(g,w)=>`hauteur ${g} mm ≠ ${w} mm`, iBed:'dépasse le plateau 256 mm', iPieces:n=>`${n} morceaux séparés`,
@@ -135,8 +146,9 @@ const T = {
     puff:(p,mm)=>`Puffiness: ${p}% of height (≈ ${mm} mm)`, fat:f=>f?`Roundness: +${f}%`:'Roundness: original font',
     wide:w=>`Width: ${w}%`, smooth:s=>s?`Smoothing: ${s}%`:'Smoothing: none', reset:'Back to Éklo style',
     colours:'Colours', coloursHint:'(pick a letter, then the colour)', all:'All', finish:'Finish', quality:'Mesh quality', std:'Standard', fine:'Fine',
-    dl:'Download 3MF (all letters)', preparing:'Preparing 3MF…',
-    note:'The 3MF opens in Bambu Studio with one part per letter, named with its colour, lying flat with the flat back on the plate. If they do not fit on one plate, use “Arrange” (A key). Grams shown are an estimate: the exact figure comes from slicing.',
+    dl:n=>`Download all ${n} letters (.zip, one 3MF per letter)`, preparing:'Preparing files…',
+    note:'Each letter gets its own 3MF, centred on the plate, flat back down, named with its colour: the way you print, one letter at a time. Grams shown are an estimate: the exact figure comes from slicing.',
+    queue:'Print queue', printed:(d,n)=>`${d}/${n} printed`, spools:'Spools needed', markDone:'Mark as printed',
     busy:'Generating…', thLetter:'Letter', thWidth:'Width', thHeight:'Height', thThick:'Thickness', thFil:'Filament ~', thCheck:'Check', thColour:'Colour · file',
     ok:'Size ✓ · 1 part ✓', check:'Check', valid:'Validated', ignored:'Skipped', empty:'Type at least one letter.',
     iHeight:(g,w)=>`height ${g} mm ≠ ${w} mm`, iBed:'larger than the 256 mm plate', iPieces:n=>`${n} separate pieces`,
@@ -151,8 +163,9 @@ const T = {
     puff:(p,mm)=>`Inflado: ${p} % de la altura (≈ ${mm} mm)`, fat:f=>f?`Redondez: +${f} %`:'Redondez: tipografía original',
     wide:w=>`Ancho: ${w} %`, smooth:s=>s?`Suavizado: ${s} %`:'Suavizado: ninguno', reset:'Volver al estilo Éklo',
     colours:'Colores', coloursHint:'(elige una letra y luego el color)', all:'Todas', finish:'Acabado', quality:'Calidad de la malla', std:'Estándar', fine:'Fina',
-    dl:'Descargar el 3MF (todas las letras)', preparing:'Preparando el 3MF…',
-    note:'El 3MF se abre en Bambu Studio con una pieza por letra, nombrada con su color, acostada con el dorso plano sobre la cama. Si no caben en una placa, usa “Organizar” (tecla A). Los gramos son un estimado: el dato exacto sale al rebanar.',
+    dl:n=>`Descargar las ${n} letras (.zip, un 3MF por letra)`, preparing:'Preparando los archivos…',
+    note:'Cada letra tiene su propio 3MF, centrada en la cama, con el dorso plano abajo y nombrada con su color: como imprimes, una letra a la vez. Los gramos son un estimado: el dato exacto sale al rebanar.',
+    queue:'Cola de impresión', printed:(d,n)=>`${d}/${n} impresas`, spools:'Bobinas necesarias', markDone:'Marcar como impresa',
     busy:'Generando…', thLetter:'Letra', thWidth:'Ancho', thHeight:'Alto', thThick:'Espesor', thFil:'Filamento ~', thCheck:'Control', thColour:'Color · archivo',
     ok:'Medida ✓ · 1 pieza ✓', check:'Revisar', valid:'Validado', ignored:'Omitido', empty:'Escribe al menos una letra.',
     iHeight:(g,w)=>`altura ${g} mm ≠ ${w} mm`, iBed:'no cabe en la cama de 256 mm', iPieces:n=>`${n} piezas separadas`,
@@ -228,7 +241,10 @@ async function build(){
   $('busy').hidden = false; $('dl3mf').disabled = true;
   const L = await buildLetters(IDX.map(i=>all[i]), font, { h:S.h, puff:S.puff, fat:S.fat, wide:S.wide, smooth:S.smooth, q:S.q }, () => my !== run);
   if (!L) return;
-  LET = L; paint(); renderTable(); renderProd(); renderStatus();
+  // la file d'impression repart de zéro si les lettres ou la hauteur changent
+  const qk = L.map(l=>l.ch).join('') + '|' + S.h;
+  if (qk !== window.__qk) { DONE = new Set(); window.__qk = qk; }
+  LET = L; paint(); renderTable(); renderProd(); renderStatus(); dlLabel();
   $('busy').hidden = true;
   $('dl3mf').disabled = !LET.length || LET.some(l=>l.issues.some(x=>x.code!=='pieces'));
 }
@@ -243,26 +259,42 @@ function renderStatus(){
 const colorOf = k => colorById(S.colors[IDX[k]]);
 function paint(){ viewer.show(LET, LET.map((_,k)=>colorOf(k).hex), { textured: S.tex==='texture', spaceBefore: spacesBefore(S.text) }); }
 function renderTable(){
-  $('rows').innerHTML = LET.map((l,k)=>`<tr><td><b>${l.ch}</b></td><td>${fmt(l.w)} mm</td><td><b>${fmt(l.h)} mm</b></td><td>${fmt(l.t)} mm</td><td>${Math.round(l.grams)} g</td><td>${l.issues.length?`<span class="pill p-w">${t.check}</span>`:`<span class="pill p-ok">${t.ok}</span>`}</td><td><span class="dot" style="background:${colorOf(k).hex}"></span>${colorOf(k)[lang]} · <a data-k="${k}">STL</a></td></tr>`).join('');
+  $('rows').innerHTML = LET.map((l,k)=>`<tr><td><b>${l.ch}</b></td><td>${fmt(l.w)} mm</td><td><b>${fmt(l.h)} mm</b></td><td>${fmt(l.t)} mm</td><td>${Math.round(l.grams)} g</td><td>${l.issues.length?`<span class="pill p-w">${t.check}</span>`:`<span class="pill p-ok">${t.ok}</span>`}</td><td><span class="dot" style="background:${colorOf(k).hex}"></span>${colorOf(k)[lang]} · <a data-k="${k}" data-f="3mf">3MF</a> · <a data-k="${k}" data-f="stl">STL</a></td></tr>`).join('');
 }
-// Fiche de production : quelles bobines charger, combien de lettres par couleur
+// File d'impression : une lettre = un travail sur la P2S, dans l'ordre du prénom, avec case « imprimée »
+let DONE = new Set();
 function renderProd(){
   if (!LET.length) { $('prod').innerHTML=''; return; }
   const by = new Map();
   LET.forEach((l,k)=>{ const c=colorOf(k); if(!by.has(c.id)) by.set(c.id,{c,letters:[],g:0}); const e=by.get(c.id); e.letters.push(l.ch); e.g+=l.grams; });
-  $('prod').innerHTML = `<b>${t.prod}</b> · ${t.prodLetters(LET.length, fmt(S.h/10))} · ${S.tex==='texture' ? t.texOn : t.texOff}<br>` +
-    [...by.values()].map(e=>`<span class="dot" style="background:${e.c.hex}"></span>${e.c[lang]} : ${e.letters.join(' ')} (~${Math.round(e.g)} g)`).join(' &nbsp;·&nbsp; ');
+  const n = LET.length;
+  $('prod').innerHTML = `<b>${t.queue}</b> · ${t.prodLetters(n, fmt(S.h/10))} · ${S.tex==='texture' ? t.texOn : t.texOff} · <span class="pill ${DONE.size===n?'p-ok':'p-w'}">${t.printed(DONE.size, n)}</span>
+    <ol>${LET.map((l,k)=>`<li class="${DONE.has(k)?'done':''}"><input type="checkbox" data-done="${k}" ${DONE.has(k)?'checked':''} aria-label="${t.markDone} ${l.ch}"><span class="n">${k+1}/${n}</span><span class="ch">${l.ch}</span><span><span class="dot" style="background:${colorOf(k).hex}"></span>${colorOf(k)[lang]}</span><span class="g">~${Math.round(l.grams)} g</span><a data-k="${k}" data-f="3mf">3MF</a></li>`).join('')}</ol>
+    <div class="sp">${t.spools} : ${[...by.values()].map(e=>`<span class="dot" style="background:${e.c.hex}"></span>${e.c[lang]} (${e.letters.join(' ')}, ~${Math.round(e.g)} g)`).join(' &nbsp;·&nbsp; ')}</div>`;
 }
-$('rows').onclick = e => { const a=e.target.closest('a[data-k]'); if(!a) return; const k=+a.dataset.k, l=LET[k]; save(stl(l), `${baseName()}_${k+1}_${l.ch}_${colorOf(k).id}.stl`); };
 const baseName = () => `eklo_${S.text.replace(/[^A-Za-z0-9À-ÿ]/g,'')||'lettres'}_${S.h/10}cm`;
+const texName = () => S.tex==='texture' ? ' ' + CATALOGUE.textures.find(x=>x.id==='texture')[lang] : '';
+const fileName = (k, ext) => `${baseName()}_${k+1}-${LET.length}_${LET[k].ch}_${colorOf(k).id}.${ext}`;
+const letterMF = k => threeMF([LET[k]], [`${LET[k].ch} ${fmt(S.h/10)}cm ${colorOf(k)[lang]}${texName()}`], { center:true });
+async function onFile(e){
+  const a = e.target.closest('a[data-k]'); if (!a) return;
+  const k = +a.dataset.k;
+  if (a.dataset.f === 'stl') save(stl(LET[k]), fileName(k,'stl')); else save(await letterMF(k), fileName(k,'3mf'));
+}
+$('rows').onclick = onFile;
+$('prod').onclick = onFile;
+$('prod').onchange = e => { const c = e.target.closest('input[data-done]'); if (!c) return; const k = +c.dataset.done; c.checked ? DONE.add(k) : DONE.delete(k); renderProd(); };
+const dlLabel = () => { $('dl3mf').textContent = t.dl(LET.length || 0); };
 $('dl3mf').onclick = async () => {
   const b=$('dl3mf'); b.disabled=true; b.textContent=t.preparing;
-  const tex = S.tex==='texture' ? ' ' + CATALOGUE.textures.find(x=>x.id==='texture')[lang] : '';
-  try { save(await threeMF(LET, LET.map((l,k)=>`${l.ch} ${fmt(S.h/10)}cm ${colorOf(k)[lang]}${tex}`)), baseName()+'.3mf'); }
-  finally { b.disabled=false; b.textContent=t.dl; }
+  try {
+    const files = [];
+    for (let k = 0; k < LET.length; k++) files.push([fileName(k,'3mf'), new Uint8Array(await (await letterMF(k)).arrayBuffer())]);
+    save(await zip(files), baseName()+'.zip');
+  } finally { b.disabled=false; dlLabel(); }
 };
 
-function texts(){ t = T[lang]; applyTexts(t, lang); document.title = t.title; drawHp(); drawTex(); drawQ(); drawColors(); labels(); drawLinkMsg(); if (LET.length) { renderTable(); renderProd(); renderStatus(); } }
+function texts(){ t = T[lang]; applyTexts(t, lang); document.title = t.title; drawHp(); drawTex(); drawQ(); drawColors(); labels(); drawLinkMsg(); dlLabel(); if (LET.length) { renderTable(); renderProd(); renderStatus(); } }
 langSwitcher($('lang'), lang, l => { lang = l; texts(); });
 texts(); syncInputs(); build();
 window.__eklo = { get letters(){ return LET; }, S };
