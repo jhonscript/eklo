@@ -118,10 +118,10 @@ td a{color:var(--teal);font-weight:600;cursor:pointer}
 </main>
 
 <script type="module">
-import { buildLetters, createViewer, threeMF, stl, save, zip, TOL } from '../lib/gonfle.js?v=12';
-import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, spacesBefore } from '../lib/catalogue.js?v=12';
-import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=12';
-import { EKLO_BULLE, EKLO_BULLE_GONFLEE } from '../lib/eklo-bulle.js?v=12';
+import { buildLetters, createViewer, threeMF, stl, save, zip, TOL } from '../lib/gonfle.js?v=14';
+import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, spacesBefore } from '../lib/catalogue.js?v=14';
+import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=14';
+import { EKLO_BULLE, EKLO_BULLE_GONFLEE, EKLO_BULLE_RONDE } from '../lib/eklo-bulle.js?v=14';
 
 const T = {
   fr: {
@@ -138,7 +138,7 @@ const T = {
     queue:'File d’impression', printed:(d,n)=>`${d}/${n} imprimée(s)`, spools:'Bobines à prévoir', markDone:'Marquer comme imprimée',
     busy:'Génération…', thLetter:'Lettre', thWidth:'Largeur', thHeight:'Hauteur', thThick:'Épaisseur', thFil:'Filament ~', thCheck:'Contrôle', thColour:'Couleur · fichier',
     ok:'Mesure ✓ · 1 pièce ✓', body:'corps', okMulti:n=>`Mesure ✓ · ${n} pièces (accent à coller)`, check:'À vérifier', valid:'Validé', ignored:'Ignoré', empty:'Écrivez au moins une lettre.',
-    iHeight:(g,w)=>`hauteur ${g} mm ≠ ${w} mm`, iBed:'dépasse le plateau 256 mm', iPieces:n=>`${n} morceaux séparés`,
+    iHeight:(g,w)=>`hauteur ${g} mm ≠ ${w} mm`, iBed:'dépasse le plateau 256 mm', iPieces:n=>`${n} morceaux séparés`, iHoles:(g,w)=>`${g} trou(s) au lieu de ${w}`, iMesh:n=>`maillage : ${n} arête(s) à réparer (Bambu Studio le fait seul)`,
     status:(n,h,tol)=>`${n} pièce(s), chacune mesurée à ${h} mm de haut (± ${tol} mm), toutes tiennent sur le plateau.`, total:g=>`Filament total ~${g} g.`,
     prod:'Fiche de production', prodLetters:(n,cm)=>`${n} lettre(s) de ${cm} cm`, texOn:'Finition <b>texturée</b> : activer « Fuzzy skin » sur toutes les pièces', texOff:'Finition lisse',
   },
@@ -156,7 +156,7 @@ const T = {
     queue:'Print queue', printed:(d,n)=>`${d}/${n} printed`, spools:'Spools needed', markDone:'Mark as printed',
     busy:'Generating…', thLetter:'Letter', thWidth:'Width', thHeight:'Height', thThick:'Thickness', thFil:'Filament ~', thCheck:'Check', thColour:'Colour · file',
     ok:'Size ✓ · 1 part ✓', body:'body', okMulti:n=>`Size ✓ · ${n} parts (accent to glue)`, check:'Check', valid:'Validated', ignored:'Skipped', empty:'Type at least one letter.',
-    iHeight:(g,w)=>`height ${g} mm ≠ ${w} mm`, iBed:'larger than the 256 mm plate', iPieces:n=>`${n} separate pieces`,
+    iHeight:(g,w)=>`height ${g} mm ≠ ${w} mm`, iBed:'larger than the 256 mm plate', iPieces:n=>`${n} separate pieces`, iHoles:(g,w)=>`${g} hole(s) instead of ${w}`, iMesh:n=>`mesh: ${n} edge(s) to repair (Bambu Studio does it automatically)`,
     status:(n,h,tol)=>`${n} part(s), each measured at ${h} mm tall (± ${tol} mm), all fit on the plate.`, total:g=>`Total filament ~${g} g.`,
     prod:'Production sheet', prodLetters:(n,cm)=>`${n} letter(s) at ${cm} cm`, texOn:'<b>Textured</b> finish: turn on “Fuzzy skin” for all parts', texOff:'Smooth finish',
   },
@@ -174,7 +174,7 @@ const T = {
     queue:'Cola de impresión', printed:(d,n)=>`${d}/${n} impresas`, spools:'Bobinas necesarias', markDone:'Marcar como impresa',
     busy:'Generando…', thLetter:'Letra', thWidth:'Ancho', thHeight:'Alto', thThick:'Espesor', thFil:'Filamento ~', thCheck:'Control', thColour:'Color · archivo',
     ok:'Medida ✓ · 1 pieza ✓', body:'cuerpo', okMulti:n=>`Medida ✓ · ${n} piezas (acento para pegar)`, check:'Revisar', valid:'Validado', ignored:'Omitido', empty:'Escribe al menos una letra.',
-    iHeight:(g,w)=>`altura ${g} mm ≠ ${w} mm`, iBed:'no cabe en la cama de 256 mm', iPieces:n=>`${n} piezas separadas`,
+    iHeight:(g,w)=>`altura ${g} mm ≠ ${w} mm`, iBed:'no cabe en la cama de 256 mm', iPieces:n=>`${n} piezas separadas`, iHoles:(g,w)=>`${g} hueco(s) en vez de ${w}`, iMesh:n=>`malla: ${n} arista(s) por reparar (Bambu Studio lo hace solo)`,
     status:(n,h,tol)=>`${n} pieza(s), cada una medida a ${h} mm de alto (± ${tol} mm), todas caben en la cama.`, total:g=>`Filamento total ~${g} g.`,
     prod:'Hoja de producción', prodLetters:(n,cm)=>`${n} letra(s) de ${cm} cm`, texOn:'Acabado <b>texturizado</b>: activar “Fuzzy skin” en todas las piezas', texOff:'Acabado liso',
   },
@@ -183,7 +183,8 @@ const T = {
 const $ = id => document.getElementById(id);
 const FONTS = [
   // Les 5 polices « ballon » gratuites (licence OFL, usage commercial permis) entre lesquelles Éklo choisit
-  {id:'eklo',    label:'Éklo Bulle Gonflée (original)', ...EKLO_BULLE_GONFLEE},
+  {id:'eklo',    label:'Éklo Bulle Ronde (original)', ...EKLO_BULLE_RONDE},
+  {id:'eklo-gon',label:'Éklo Bulle Gonflée (original)', ...EKLO_BULLE_GONFLEE},
   {id:'eklo-fin',label:'Éklo Bulle (original, plus fine)', ...EKLO_BULLE},
   {id:'cherry',  label:'Cherry Bomb One', f:'Cherry Bomb One', w:400, fat:4},
   {id:'coiny',   label:'Coiny', f:'Coiny', w:400, fat:4},
@@ -192,7 +193,7 @@ const FONTS = [
   {id:'gluten',  label:'Gluten', f:'Gluten', w:900, fat:4},
 ];
 let lang = detectLang(), t = T[lang];
-const STYLE = () => ({ font:'eklo', puff:CATALOGUE.puff, fat:CATALOGUE.fat, wide:CATALOGUE.wide, smooth:CATALOGUE.smooth, profile:CATALOGUE.profile, round:CATALOGUE.round });
+const STYLE = () => ({ font:'eklo', puff:CATALOGUE.puff, fat:CATALOGUE.fat, wide:CATALOGUE.wide, smooth:CATALOGUE.smooth, profile:CATALOGUE.profile, round:CATALOGUE.round, swell:CATALOGUE.swell||0 });
 const S = { text:'EKLO', h:150, q:'std', colors:[], tex:'lisse', ...STYLE() };
 fitColors(S);
 let sel = 'all';
@@ -225,7 +226,7 @@ $('reset').onclick = () => { Object.assign(S, STYLE()); syncInputs(); schedule()
 $('txt').oninput = e => { S.text = e.target.value.toUpperCase(); fitColors(S); drawColors(); schedule(); };
 // chaque police a sa « rondeur » conseillée (Éklo Bulle : 0, le trait donne déjà la graisse)
 // chaque police apporte ses réglages conseillés (alphabets Éklo : font.style ; polices Google : rondeur 4 %)
-$('font').onchange = e => { S.font = e.target.value; const f = FONTS.find(x=>x.id===S.font); Object.assign(S, f.style || { puff:25, fat:f.fat ?? 4, wide:100, smooth:0, profile:'circle', round:0.5 }); syncInputs(); schedule(); };
+$('font').onchange = e => { S.font = e.target.value; const f = FONTS.find(x=>x.id===S.font); Object.assign(S, { swell:0 }, f.style || { puff:25, fat:f.fat ?? 4, wide:100, smooth:0, profile:'circle', round:0.5 }); syncInputs(); schedule(); };
 $('h').oninput = e => { const v=+e.target.value; if(v>0){ S.h=v; drawHp(); labels(); schedule(); } };
 $('puff').oninput = e => { S.puff=+e.target.value; labels(); schedule(); };
 $('fat').oninput = e => { S.fat=+e.target.value; labels(); schedule(); };
@@ -251,16 +252,17 @@ async function build(){
   IDX = all.map((c,i)=>isAllowed(c)?i:-1).filter(i=>i>=0);
   BAD = all.filter(c=>!isAllowed(c));
   $('busy').hidden = false; $('dl3mf').disabled = true;
-  const L = await buildLetters(IDX.map(i=>all[i]), font, { h:S.h, puff:S.puff, fat:S.fat, wide:S.wide, smooth:S.smooth, profile:S.profile, round:S.round, q:S.q }, () => my !== run);
+  const L = await buildLetters(IDX.map(i=>all[i]), font, { h:S.h, puff:S.puff, fat:S.fat, wide:S.wide, smooth:S.smooth, profile:S.profile, round:S.round, swell:S.swell, q:S.q }, () => my !== run);
   if (!L) return;
   // la file d'impression repart de zéro si les lettres ou la hauteur changent
   const qk = L.map(l=>l.ch).join('') + '|' + S.h;
   if (qk !== window.__qk) { DONE = new Set(); window.__qk = qk; }
   LET = L; paint(); renderTable(); renderProd(); renderStatus(); dlLabel();
   $('busy').hidden = true;
-  $('dl3mf').disabled = !LET.length || LET.some(l=>l.issues.some(x=>x.code!=='pieces'));
+  // bloquent le téléchargement : hauteur, plateau, trous. Pièces multiples (accent à coller) et petites réparations de maillage : avertissement seulement
+  $('dl3mf').disabled = !LET.length || LET.some(l=>l.issues.some(x=>x.code==='height'||x.code==='bed'||x.code==='holes'));
 }
-const issueTxt = l => l.issues.map(x => x.code==='height' ? t.iHeight(fmt(x.got), fmt(S.h)) : x.code==='bed' ? t.iBed : t.iPieces(x.n));
+const issueTxt = l => l.issues.map(x => x.code==='height' ? t.iHeight(fmt(x.got), fmt(S.h)) : x.code==='bed' ? t.iBed : x.code==='holes' ? t.iHoles(x.got, x.want) : x.code==='mesh' ? t.iMesh(x.n) : t.iPieces(x.n));
 function renderStatus(){
   const withIssues = LET.filter(l=>l.issues.length), total = LET.reduce((s,l)=>s+l.grams,0);
   $('status').innerHTML = !LET.length ? t.empty :
