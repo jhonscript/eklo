@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Éklo Bulle · Alphabet</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@700&family=Figtree:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#0d1716);--ink:light-dark(#10211f,#e6f2f0);--mut:light-dark(#4f6a66,#9db8b3);--line:light-dark(#d3e6e2,#26403b);--teal:light-dark(#0c8a84,#3cc4bb)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Figtree,system-ui,sans-serif}
+header{padding:14px 20px;border-bottom:1px solid var(--line)}
+h1{margin:0;font:700 24px Fredoka,sans-serif;color:var(--teal)}
+header p{margin:4px 0 0;color:var(--mut)}
+.row{position:relative;height:min(40vw,520px);min-height:220px;border-bottom:1px solid var(--line);background:#34343a}
+.row span{position:absolute;left:12px;top:8px;color:#fff;font:600 13px Figtree,sans-serif;z-index:2;opacity:.8}
+.row canvas{position:absolute;inset:0;width:100%;height:100%}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head>
+<body>
+<header><h1>Éklo Bulle</h1><p>Alphabet original d'Éklo Atelier Créatif · A–Z, 0–9, accents français et espagnols</p></header>
+<div id="rows"></div>
+<script type="module">
+import { genLetter, createViewer } from '../lib/gonfle.js?v=8';
+import { EKLO_BULLE } from '../lib/eklo-bulle.js?v=8';
+import { CATALOGUE } from '../lib/catalogue.js?v=8';
+const ALL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?ÉÈÊËÀÂÇÎÏÔÙÛÑÁ';
+const ROWS = []; for (let i = 0; i < ALL.length; i += 5) ROWS.push(ALL.slice(i, i + 5));
+const q = new URLSearchParams(location.search);
+const opt = { h: 100, puff: +(q.get('puff') ?? CATALOGUE.puff), fat: +(q.get('fat') ?? 0), wide: 100, smooth: +(q.get('smooth') ?? 0), q: 'std' };
+const report = [];
+for (const row of ROWS) {
+  const el = document.createElement('div'); el.className = 'row'; el.innerHTML = `<span>${row}</span>`; document.getElementById('rows').appendChild(el);
+  await new Promise(r => setTimeout(r, 0));
+  const L = [...row].map(c => genLetter(c, EKLO_BULLE, opt)).filter(Boolean);
+  createViewer(el).show(L, L.map(() => '#eeeeee'));
+  for (const l of L) report.push(`${l.ch} ${l.w.toFixed(0)}x${l.h.toFixed(0)} corps ${l.body.toFixed(1)} pièces ${l.pieces}${l.issues.length ? ' ⚠' + l.issues.map(i => i.code).join(',') : ''}`);
+}
+window.__report = report;
+</script>
+</body>
+</html>

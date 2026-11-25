@@ -28,22 +28,26 @@ a.card span{display:block;color:var(--mut);font-size:14.5px;margin-top:2px}
 <p data-t="lead"></p>
 <a class="card" id="cfg" href="configurateur/"><b data-t="cfgT"></b><span data-t="cfgD"></span></a>
 <a class="card" id="tool" href="lettres-gonflees/"><b data-t="toolT"></b><span data-t="toolD"></span></a>
+<a class="card" id="abc" href="alphabet/"><b data-t="abcT"></b><span data-t="abcD"></span></a>
 <a class="card soon" aria-disabled="true"><b data-t="ornT"></b><span data-t="soon"></span></a>
 </main>
 <script type="module">
-import { detectLang, langSwitcher, applyTexts } from './lib/i18n.js?v=7';
+import { detectLang, langSwitcher, applyTexts } from './lib/i18n.js?v=8';
 const T = {
   fr: { title:'Éklo · Outils d’atelier', lead:'Pièces personnalisées à la mesure exacte, prêtes pour Bambu Studio.',
         cfgT:'Configurateur client · Lettres gonflées', cfgD:'Ce que voit le client : taille, prénom, couleur par lettre, finition et prix.',
         toolT:'Atelier · Lettres gonflées', toolD:'Pour l’atelier : coller le lien d’un client, vérifier les mesures, télécharger le 3MF.',
+        abcT:'Alphabet Éklo Bulle', abcD:'L’alphabet original d’Éklo : A–Z, 0–9 et accents, gonflé en 3D.',
         ornT:'Ornement de Noël avec prénoms', soon:'Bientôt.' },
   en: { title:'Éklo · Workshop tools', lead:'Custom parts at the exact size, ready for Bambu Studio.',
         cfgT:'Customer configurator · Puffy letters', cfgD:'What the customer sees: size, name, colour per letter, finish and price.',
         toolT:'Workshop · Puffy letters', toolD:'For the workshop: paste a customer link, check the measurements, download the 3MF.',
+        abcT:'Éklo Bulle alphabet', abcD:'Éklo’s original alphabet: A–Z, 0–9 and accents, puffed up in 3D.',
         ornT:'Christmas ornament with names', soon:'Coming soon.' },
   es: { title:'Éklo · Herramientas del taller', lead:'Piezas personalizadas a la medida exacta, listas para Bambu Studio.',
         cfgT:'Configurador para clientes · Letras infladas', cfgD:'Lo que ve el cliente: tamaño, nombre, color por letra, acabado y precio.',
         toolT:'Taller · Letras infladas', toolD:'Para el taller: pegar el enlace de un cliente, verificar las medidas y descargar el 3MF.',
+        abcT:'Alfabeto Éklo Bulle', abcD:'El alfabeto original de Éklo: A–Z, 0–9 y acentos, inflado en 3D.',
         ornT:'Adorno navideño con nombres', soon:'Próximamente.' },
 };
 const go = lang => {
