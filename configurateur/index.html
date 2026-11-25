@@ -100,9 +100,9 @@ footer{border-top:1px solid var(--line);padding:16px max(4vw,16px);color:var(--m
 <footer data-t="foot"></footer>
 
 <script type="module">
-import { buildLetters, createViewer } from '../lib/gonfle.js?v=9';
-import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, orderQuery, priceOf, spacesBefore } from '../lib/catalogue.js?v=9';
-import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=9';
+import { buildLetters, createViewer } from '../lib/gonfle.js?v=11';
+import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, orderQuery, priceOf, spacesBefore } from '../lib/catalogue.js?v=11';
+import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=11';
 
 const T = {
   fr: {
@@ -197,7 +197,7 @@ async function preview(){
   const my = ++run;
   const chars = lettersOf(O.text).filter(isAllowed).slice(0, CATALOGUE.maxLetters);
   $('busy').hidden = false;
-  const L = await buildLetters(chars, CATALOGUE.font, { h:O.h, puff:CATALOGUE.puff, fat:CATALOGUE.fat, wide:CATALOGUE.wide, smooth:CATALOGUE.smooth, q:CATALOGUE.q }, () => my !== run);
+  const L = await buildLetters(chars, CATALOGUE.font, { h:O.h, puff:CATALOGUE.puff, fat:CATALOGUE.fat, wide:CATALOGUE.wide, smooth:CATALOGUE.smooth, profile:CATALOGUE.profile, round:CATALOGUE.round, q:CATALOGUE.q }, () => my !== run);
   if (!L) return;
   LET = L; paint(); $('busy').hidden = true;
 }

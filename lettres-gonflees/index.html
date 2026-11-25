@@ -90,6 +90,8 @@ td a{color:var(--teal);font-weight:600;cursor:pointer}
   <div class="row" id="hp"></div>
   <label for="puff" id="puffv"></label>
   <input type="range" id="puff" min="12" max="40" step="1">
+  <label for="round" id="roundv"></label>
+  <input type="range" id="round" min="50" max="90" step="5">
   <label for="fat" id="fatv"></label>
   <input type="range" id="fat" min="0" max="16" step="1">
   <label for="wide" id="widev"></label>
@@ -116,10 +118,10 @@ td a{color:var(--teal);font-weight:600;cursor:pointer}
 </main>
 
 <script type="module">
-import { buildLetters, createViewer, threeMF, stl, save, zip, TOL } from '../lib/gonfle.js?v=9';
-import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, spacesBefore } from '../lib/catalogue.js?v=9';
-import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=9';
-import { EKLO_BULLE, EKLO_BULLE_GONFLEE } from '../lib/eklo-bulle.js?v=9';
+import { buildLetters, createViewer, threeMF, stl, save, zip, TOL } from '../lib/gonfle.js?v=11';
+import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, spacesBefore } from '../lib/catalogue.js?v=11';
+import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=11';
+import { EKLO_BULLE, EKLO_BULLE_GONFLEE } from '../lib/eklo-bulle.js?v=11';
 
 const T = {
   fr: {
@@ -128,6 +130,7 @@ const T = {
     loaded:'Chargée', badLink:'<span class="pill p-w">Lien non reconnu</span> Collez le lien complet copié depuis le configurateur.',
     letters:'Lettres', lettersHint:'(chaque lettre = une pièce)', font:'Police', height:'Hauteur exacte de chaque lettre',
     puff:(p,mm)=>`Gonflement : ${p} % de la hauteur (≈ ${mm} mm)`, fat:f=>f?`Rondeur : +${f} %`:'Rondeur : police d’origine',
+    round:r=>`Dessus (dernière couche) : ${r<=0.5?'plat':r<0.8?'arrondi':'très arrondi'} (${Math.round(r*100)})`,
     wide:w=>`Largeur : ${w} %`, smooth:s=>s?`Lissage : ${s} %`:'Lissage : aucun', reset:'Revenir au style Éklo',
     colours:'Couleurs', coloursHint:'(choisir une lettre, puis la couleur)', all:'Toutes', finish:'Finition', quality:'Qualité du maillage', std:'Standard', fine:'Fine',
     dl:n=>`Télécharger les ${n} lettres (.zip, un 3MF par lettre)`, preparing:'Préparation des fichiers…',
@@ -145,6 +148,7 @@ const T = {
     loaded:'Loaded', badLink:'<span class="pill p-w">Link not recognised</span> Paste the full link copied from the configurator.',
     letters:'Letters', lettersHint:'(each letter = one part)', font:'Font', height:'Exact height of each letter',
     puff:(p,mm)=>`Puffiness: ${p}% of height (≈ ${mm} mm)`, fat:f=>f?`Roundness: +${f}%`:'Roundness: original font',
+    round:r=>`Top (last layer): ${r<=0.5?'flat':r<0.8?'rounded':'very rounded'} (${Math.round(r*100)})`,
     wide:w=>`Width: ${w}%`, smooth:s=>s?`Smoothing: ${s}%`:'Smoothing: none', reset:'Back to Éklo style',
     colours:'Colours', coloursHint:'(pick a letter, then the colour)', all:'All', finish:'Finish', quality:'Mesh quality', std:'Standard', fine:'Fine',
     dl:n=>`Download all ${n} letters (.zip, one 3MF per letter)`, preparing:'Preparing files…',
@@ -162,6 +166,7 @@ const T = {
     loaded:'Cargado', badLink:'<span class="pill p-w">Enlace no reconocido</span> Pega el enlace completo copiado del configurador.',
     letters:'Letras', lettersHint:'(cada letra = una pieza)', font:'Tipografía', height:'Altura exacta de cada letra',
     puff:(p,mm)=>`Inflado: ${p} % de la altura (≈ ${mm} mm)`, fat:f=>f?`Redondez: +${f} %`:'Redondez: tipografía original',
+    round:r=>`Tapa (última capa): ${r<=0.5?'plana':r<0.8?'redondeada':'muy redondeada'} (${Math.round(r*100)})`,
     wide:w=>`Ancho: ${w} %`, smooth:s=>s?`Suavizado: ${s} %`:'Suavizado: ninguno', reset:'Volver al estilo Éklo',
     colours:'Colores', coloursHint:'(elige una letra y luego el color)', all:'Todas', finish:'Acabado', quality:'Calidad de la malla', std:'Estándar', fine:'Fina',
     dl:n=>`Descargar las ${n} letras (.zip, un 3MF por letra)`, preparing:'Preparando los archivos…',
@@ -187,7 +192,7 @@ const FONTS = [
   {id:'gluten',  label:'Gluten', f:'Gluten', w:900, fat:4},
 ];
 let lang = detectLang(), t = T[lang];
-const STYLE = () => ({ font:'eklo', puff:CATALOGUE.puff, fat:CATALOGUE.fat, wide:CATALOGUE.wide, smooth:CATALOGUE.smooth });
+const STYLE = () => ({ font:'eklo', puff:CATALOGUE.puff, fat:CATALOGUE.fat, wide:CATALOGUE.wide, smooth:CATALOGUE.smooth, profile:CATALOGUE.profile, round:CATALOGUE.round });
 const S = { text:'EKLO', h:150, q:'std', colors:[], tex:'lisse', ...STYLE() };
 fitColors(S);
 let sel = 'all';
@@ -211,15 +216,16 @@ function drawColors(){
 }
 $('lt').onclick = e => { const b=e.target.closest('button'); if(!b) return; sel = b.dataset.i==='all' ? 'all' : +b.dataset.i; drawColors(); };
 $('col').onclick = e => { const b=e.target.closest('button'); if(!b) return; if (sel==='all') S.colors = S.colors.map(()=>b.dataset.c); else S.colors[sel] = b.dataset.c; drawColors(); paint(); renderTable(); renderProd(); };
-const labels = () => { $('puffv').textContent = t.puff(S.puff, fmt(S.h*S.puff/100,0)); $('fatv').textContent = t.fat(S.fat); $('widev').textContent = t.wide(S.wide); $('smoothv').textContent = t.smooth(S.smooth); };
-function syncInputs(){ $('txt').value=S.text; $('h').value=S.h; $('puff').value=S.puff; $('fat').value=S.fat; $('wide').value=S.wide; $('smooth').value=S.smooth; $('font').value=S.font; drawHp(); drawTex(); drawQ(); drawColors(); labels(); }
+const labels = () => { $('puffv').textContent = t.puff(S.puff, fmt(S.h*S.puff/100,0)); $('fatv').textContent = t.fat(S.fat); $('widev').textContent = t.wide(S.wide); $('smoothv').textContent = t.smooth(S.smooth); $('roundv').textContent = t.round(S.round || 0.5); };
+function syncInputs(){ $('txt').value=S.text; $('h').value=S.h; $('puff').value=S.puff; $('fat').value=S.fat; $('wide').value=S.wide; $('smooth').value=S.smooth; $('round').value=Math.round((S.round||0.5)*100); $('font').value=S.font; drawHp(); drawTex(); drawQ(); drawColors(); labels(); }
 $('wide').oninput = e => { S.wide=+e.target.value; labels(); schedule(); };
 $('smooth').oninput = e => { S.smooth=+e.target.value; labels(); schedule(); };
+$('round').oninput = e => { S.round=+e.target.value/100; labels(); schedule(); };
 $('reset').onclick = () => { Object.assign(S, STYLE()); syncInputs(); schedule(); };
 $('txt').oninput = e => { S.text = e.target.value.toUpperCase(); fitColors(S); drawColors(); schedule(); };
 // chaque police a sa « rondeur » conseillée (Éklo Bulle : 0, le trait donne déjà la graisse)
 // chaque police apporte ses réglages conseillés (alphabets Éklo : font.style ; polices Google : rondeur 4 %)
-$('font').onchange = e => { S.font = e.target.value; const f = FONTS.find(x=>x.id===S.font); Object.assign(S, f.style || { puff:25, fat:f.fat ?? 4, wide:100, smooth:0 }); syncInputs(); schedule(); };
+$('font').onchange = e => { S.font = e.target.value; const f = FONTS.find(x=>x.id===S.font); Object.assign(S, f.style || { puff:25, fat:f.fat ?? 4, wide:100, smooth:0, profile:'circle', round:0.5 }); syncInputs(); schedule(); };
 $('h').oninput = e => { const v=+e.target.value; if(v>0){ S.h=v; drawHp(); labels(); schedule(); } };
 $('puff').oninput = e => { S.puff=+e.target.value; labels(); schedule(); };
 $('fat').oninput = e => { S.fat=+e.target.value; labels(); schedule(); };
@@ -245,7 +251,7 @@ async function build(){
   IDX = all.map((c,i)=>isAllowed(c)?i:-1).filter(i=>i>=0);
   BAD = all.filter(c=>!isAllowed(c));
   $('busy').hidden = false; $('dl3mf').disabled = true;
-  const L = await buildLetters(IDX.map(i=>all[i]), font, { h:S.h, puff:S.puff, fat:S.fat, wide:S.wide, smooth:S.smooth, q:S.q }, () => my !== run);
+  const L = await buildLetters(IDX.map(i=>all[i]), font, { h:S.h, puff:S.puff, fat:S.fat, wide:S.wide, smooth:S.smooth, profile:S.profile, round:S.round, q:S.q }, () => my !== run);
   if (!L) return;
   // la file d'impression repart de zéro si les lettres ou la hauteur changent
   const qk = L.map(l=>l.ch).join('') + '|' + S.h;
