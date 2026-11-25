@@ -21,9 +21,9 @@ header p{margin:4px 0 0;color:var(--mut)}
 <header><h1>Éklo Bulle</h1><p>Alphabet original d'Éklo Atelier Créatif · A–Z, 0–9, accents français et espagnols · <a href="?v=gonflee" style="color:var(--teal)">Gonflée</a> · <a href="?v=fine" style="color:var(--teal)">Fine</a></p></header>
 <div id="rows"></div>
 <script type="module">
-import { genLetter, createViewer } from '../lib/gonfle.js?v=11';
-import { EKLO_BULLE, EKLO_BULLE_GONFLEE } from '../lib/eklo-bulle.js?v=11';
-import { CATALOGUE } from '../lib/catalogue.js?v=11';
+import { genLetter, createViewer } from '../lib/gonfle.js?v=12';
+import { EKLO_BULLE, EKLO_BULLE_GONFLEE } from '../lib/eklo-bulle.js?v=12';
+import { CATALOGUE } from '../lib/catalogue.js?v=12';
 const ALL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?ÉÈÊËÀÂÇÎÏÔÙÛÑÁ';
 const ROWS = []; for (let i = 0; i < ALL.length; i += 5) ROWS.push(ALL.slice(i, i + 5));
 const q = new URLSearchParams(location.search);
