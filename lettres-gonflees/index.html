@@ -118,10 +118,10 @@ td a{color:var(--teal);font-weight:600;cursor:pointer}
 </main>
 
 <script type="module">
-import { buildLetters, createViewer, threeMF, stl, save, zip, TOL } from '../lib/gonfle.js?v=27';
-import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, spacesBefore, finishOf, styleFor } from '../lib/catalogue.js?v=27';
-import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=27';
-import { EKLO_BULLE, EKLO_BULLE_GONFLEE, EKLO_BULLE_RONDE } from '../lib/eklo-bulle.js?v=27';
+import { buildLetters, createViewer, threeMF, stl, save, zip, TOL } from '../lib/gonfle.js?v=28';
+import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, spacesBefore, finishOf, styleFor } from '../lib/catalogue.js?v=28';
+import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=28';
+import { EKLO_BULLE, EKLO_BULLE_GONFLEE, EKLO_BULLE_RONDE } from '../lib/eklo-bulle.js?v=28';
 
 const T = {
   fr: {
@@ -197,7 +197,7 @@ const FONTS = [
 let lang = detectLang(), t = T[lang];
 // style Éklo + ajustement de la finition (brillant céramique : dessus plus rond)
 const STYLE = tex => ({ font:'eklo', ...styleFor(tex) });
-const S = { text:'EKLO', h:150, q:'std', colors:[], tex:'lisse', ...STYLE('lisse') };
+const S = { text:'EKLO', h:150, q:'std', colors:[], tex:CATALOGUE.defaultTex, ...STYLE(CATALOGUE.defaultTex) };
 fitColors(S);
 let sel = 'all';
 const cm = mm => fmt(mm/10, mm%10 ? 1 : 0);

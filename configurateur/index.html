@@ -107,9 +107,9 @@ footer{border-top:1px solid var(--line);padding:16px max(4vw,16px);color:var(--m
 <footer data-t="foot"></footer>
 
 <script type="module">
-import { buildLetters, createViewer } from '../lib/gonfle.js?v=27';
-import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, orderQuery, priceOf, spacesBefore, finishOf, styleFor } from '../lib/catalogue.js?v=27';
-import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=27';
+import { buildLetters, createViewer } from '../lib/gonfle.js?v=28';
+import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, orderQuery, priceOf, spacesBefore, finishOf, styleFor } from '../lib/catalogue.js?v=28';
+import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=28';
 
 const T = {
   fr: {
@@ -152,7 +152,7 @@ const T = {
 const $ = id => document.getElementById(id);
 const params = new URLSearchParams(location.search);
 let lang = detectLang();
-const O = params.get('t') ? parseOrder(location.search) : fitColors({ text:'LÉA', h:150, colors:['rose','ciel','or'], tex:'lisse' });
+const O = params.get('t') ? parseOrder(location.search) : fitColors({ text:'LÉA', h:150, colors:['rose','ciel','or'], tex:CATALOGUE.defaultTex });
 let sel = 'all';
 const money = v => new Intl.NumberFormat(locale(lang), { style:'currency', currency:CATALOGUE.currency }).format(v);
 const cm = mm => (mm/10).toLocaleString(locale(lang));
