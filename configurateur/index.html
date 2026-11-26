@@ -107,9 +107,9 @@ footer{border-top:1px solid var(--line);padding:16px max(4vw,16px);color:var(--m
 <footer data-t="foot"></footer>
 
 <script type="module">
-import { buildLetters, createViewer } from '../lib/gonfle.js?v=28';
-import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, orderQuery, priceOf, spacesBefore, finishOf, styleFor } from '../lib/catalogue.js?v=28';
-import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=28';
+import { buildLetters, createViewer } from '../lib/gonfle.js?v=29';
+import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, orderQuery, priceOf, spacesBefore, finishOf, styleFor, extraOf } from '../lib/catalogue.js?v=29';
+import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=29';
 
 const T = {
   fr: {
@@ -189,7 +189,7 @@ function drawLetters(){
 }
 function drawTex(){
   const t = T[lang];
-  $('tex').innerHTML = CATALOGUE.textures.map(x => `<button type="button" data-x="${x.id}" aria-pressed="${x.id === O.tex}">${x[lang]}<small>${t.texNote[x.id]}${x.extra ? `<br><b>${t.extraNote(money(x.extra))}</b>` : ''}</small></button>`).join('');
+  $('tex').innerHTML = CATALOGUE.textures.map(x => `<button type="button" data-x="${x.id}" aria-pressed="${x.id === O.tex}">${x[lang]}<small>${t.texNote[x.id]}${extraOf(x.id, O.h) ? `<br><b>${t.extraNote(money(extraOf(x.id, O.h)))}</b>` : ''}</small></button>`).join('');
 }
 function drawSum(){
   const t = T[lang], p = priceOf(O), n = Math.min(p.n, CATALOGUE.maxLetters);
@@ -223,7 +223,7 @@ function paint(){
 }
 
 langSwitcher($('lang'), lang, l => { lang = l; all(); syncURL(); });
-$('sizes').onclick = e => { const b = e.target.closest('button'); if (!b) return; O.h = +b.dataset.h; drawSizes(); drawSum(); schedule(); };
+$('sizes').onclick = e => { const b = e.target.closest('button'); if (!b) return; O.h = +b.dataset.h; drawSizes(); drawTex(); drawSum(); schedule(); };
 $('txt').oninput = e => { O.text = e.target.value.toUpperCase(); fitColors(O); drawText(); drawLetters(); drawSum(); schedule(); };
 $('letters').onclick = e => { const b = e.target.closest('button'); if (!b) return; sel = b.dataset.i === 'all' ? 'all' : +b.dataset.i; drawLetters(); };
 $('sw').onclick = e => {
