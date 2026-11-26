@@ -31,6 +31,7 @@ h1{font:700 clamp(28px,4vw,40px)/1.1 Fredoka,sans-serif;margin:0 0 6px}
 .st{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}
 .st b{font:600 19px Fredoka,sans-serif}
 .st span{font:700 12px Figtree,sans-serif;color:var(--teal);letter-spacing:.06em}
+.st small{font-size:13px;color:var(--mut);margin:0}
 .seg{display:flex;flex-wrap:wrap;gap:8px}
 .seg button{font:600 15px Figtree,sans-serif;min-height:46px;padding:6px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;text-align:left}
 .seg button small{display:block;font-weight:500;font-size:12.5px;color:var(--mut)}
@@ -57,7 +58,12 @@ input:focus-visible,button:focus-visible{outline:3px solid color-mix(in srgb,var
 .small{font-size:13px;color:var(--mut);margin:10px 0 0}
 .tag{display:inline-block;font:700 11.5px Figtree,sans-serif;padding:2px 8px;border-radius:99px;background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
 footer{border-top:1px solid var(--line);padding:16px max(4vw,16px);color:var(--mut);font-size:13.5px;text-align:center}
-@media(max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}.stage{position:static}}
+#sizes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}
+  /* sur téléphone l'aperçu reste visible en haut pendant qu'on choisit couleurs et finition */
+  .stage{position:sticky;top:0;z-index:5;background:var(--bg);padding:6px 0 8px;margin:0 -4px}
+  #view{aspect-ratio:auto;height:32vh}.hint{display:none}
+  #sizes{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 </head>
@@ -76,12 +82,12 @@ footer{border-top:1px solid var(--line);padding:16px max(4vw,16px);color:var(--m
     </div>
     <div>
       <div class="step">
-        <div class="st"><span>01</span><b data-t="size"></b></div>
+        <div class="st"><span>01</span><b data-t="size"></b><small id="sizenote" ></small></div>
         <div class="seg" id="sizes"></div>
       </div>
       <div class="step">
         <div class="st"><span>02</span><b data-t="name"></b></div>
-        <input type="text" id="txt" autocomplete="off" spellcheck="false" maxlength="30" aria-describedby="txtmsg">
+        <input type="text" id="txt" autocomplete="off" spellcheck="false" maxlength="40" aria-describedby="txtmsg">
         <div class="msg" id="txtmsg"></div>
       </div>
       <div class="step">
@@ -100,46 +106,46 @@ footer{border-top:1px solid var(--line);padding:16px max(4vw,16px);color:var(--m
 <footer data-t="foot"></footer>
 
 <script type="module">
-import { buildLetters, createViewer } from '../lib/gonfle.js?v=21';
-import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, orderQuery, priceOf, spacesBefore } from '../lib/catalogue.js?v=21';
-import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=21';
+import { buildLetters, createViewer } from '../lib/gonfle.js?v=22';
+import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, orderQuery, priceOf, spacesBefore } from '../lib/catalogue.js?v=22';
+import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=22';
 
 const T = {
   fr: {
     atelier:'Atelier créatif', title:'Votre prénom en lettres gonflées', lead:'Imprimées en 3D à Sherbrooke, à la hauteur exacte choisie. Choisissez une couleur par lettre ou une seule pour tout le prénom.',
     busy:'Création de l’aperçu…', hint:'Faites glisser pour tourner l’aperçu. Les couleurs à l’écran sont indicatives.',
-    size:'Hauteur des lettres', perLetter:'/ lettre', name:'Prénom', placeholder:'Ex. : LÉA',
+    size:'Hauteur des lettres', perLetter:'prix par lettre', name:'Prénom', placeholder:'Ex. : LÉA',
     nameMsg:n=>`${n} lettre(s) · jusqu’à ${CATALOGUE.maxLetters} lettres · les espaces sont gratuits`, tooMany:`Maximum ${CATALOGUE.maxLetters} lettres : les lettres en trop ne sont pas comptées.`, badChars:c=>`Caractères non disponibles : ${c}`,
     colour:'Couleurs', all:'Toutes les lettres', finish:'Finition', texNote:{lisse:'Surface lisse et satinée', texture:'Surface mate au toucher granuleux'},
     letters:(n,u)=>`${n} lettre(s) × ${u}`, subtotal:'Sous-total', taxShip:'Taxes et livraison calculées au paiement, selon votre province. Ramassage gratuit à Sherbrooke.',
     order:'Commander', soon:'Paiement en ligne bientôt', copy:'Copier le lien de ma création', copied:'Lien copié ✓',
     interim:'En attendant : copiez le lien de votre création et envoyez-le-nous en message sur Instagram @ekloatelier. On vous confirme le prix et le délai.',
     example:'Prix d’exemple', empty:'Écrivez un prénom pour voir l’aperçu.',
-    foot:'Éklo Atelier créatif · Sherbrooke, Québec · Livraison partout au Canada', each:h=>`Chaque lettre mesure exactement ${h} cm de haut.`,
+    foot:'Éklo Atelier créatif · Sherbrooke, Québec · Livraison partout au Canada', each:h=>`Chaque lettre mesure exactement ${h} cm de haut (les accents dépassent au-dessus).`,
   },
   en: {
     atelier:'Creative studio', title:'Your name in puffy letters', lead:'3D printed in Sherbrooke, at the exact height you choose. Pick a colour for each letter, or one colour for the whole name.',
     busy:'Building preview…', hint:'Drag to rotate the preview. On-screen colours are a guide only.',
-    size:'Letter height', perLetter:'/ letter', name:'Name', placeholder:'E.g. LEA',
+    size:'Letter height', perLetter:'price per letter', name:'Name', placeholder:'E.g. LEA',
     nameMsg:n=>`${n} letter(s) · up to ${CATALOGUE.maxLetters} letters · spaces are free`, tooMany:`Maximum ${CATALOGUE.maxLetters} letters: extra letters are not counted.`, badChars:c=>`Characters not available: ${c}`,
     colour:'Colours', all:'All letters', finish:'Finish', texNote:{lisse:'Smooth, satin surface', texture:'Matte surface with a grainy feel'},
     letters:(n,u)=>`${n} letter(s) × ${u}`, subtotal:'Subtotal', taxShip:'Taxes and shipping calculated at checkout, based on your province. Free pickup in Sherbrooke.',
     order:'Order', soon:'Online checkout coming soon', copy:'Copy the link to my design', copied:'Link copied ✓',
     interim:'In the meantime: copy the link to your design and send it to us on Instagram @ekloatelier. We will confirm the price and timing.',
     example:'Sample price', empty:'Type a name to see the preview.',
-    foot:'Éklo Atelier créatif · Sherbrooke, Quebec · Shipping across Canada', each:h=>`Each letter is exactly ${h} cm tall.`,
+    foot:'Éklo Atelier créatif · Sherbrooke, Quebec · Shipping across Canada', each:h=>`Each letter is exactly ${h} cm tall (accents sit above).`,
   },
   es: {
     atelier:'Taller creativo', title:'Tu nombre en letras infladas', lead:'Impresas en 3D en Sherbrooke, a la altura exacta que elijas. Elige un color por letra o uno solo para todo el nombre.',
     busy:'Creando la vista previa…', hint:'Arrastra para girar la vista previa. Los colores en pantalla son orientativos.',
-    size:'Altura de las letras', perLetter:'/ letra', name:'Nombre', placeholder:'Ej.: LÉA',
+    size:'Altura de las letras', perLetter:'precio por letra', name:'Nombre', placeholder:'Ej.: LÉA',
     nameMsg:n=>`${n} letra(s) · hasta ${CATALOGUE.maxLetters} letras · los espacios son gratis`, tooMany:`Máximo ${CATALOGUE.maxLetters} letras: las que sobran no se cuentan.`, badChars:c=>`Caracteres no disponibles: ${c}`,
     colour:'Colores', all:'Todas las letras', finish:'Acabado', texNote:{lisse:'Superficie lisa y satinada', texture:'Superficie mate, de tacto granulado'},
     letters:(n,u)=>`${n} letra(s) × ${u}`, subtotal:'Subtotal', taxShip:'Los impuestos y el envío se calculan al pagar, según tu provincia. Retiro gratis en Sherbrooke.',
     order:'Pedir', soon:'Pago en línea próximamente', copy:'Copiar el enlace de mi diseño', copied:'Enlace copiado ✓',
     interim:'Mientras tanto: copia el enlace de tu diseño y envíanoslo por mensaje en Instagram @ekloatelier. Te confirmamos el precio y el plazo.',
     example:'Precio de ejemplo', empty:'Escribe un nombre para ver la vista previa.',
-    foot:'Éklo Atelier créatif · Sherbrooke, Quebec · Envíos a todo Canadá', each:h=>`Cada letra mide exactamente ${h} cm de alto.`,
+    foot:'Éklo Atelier créatif · Sherbrooke, Quebec · Envíos a todo Canadá', each:h=>`Cada letra mide exactamente ${h} cm de alto (los acentos sobresalen por encima).`,
   },
 };
 const $ = id => document.getElementById(id);
@@ -149,7 +155,7 @@ const O = params.get('t') ? parseOrder(location.search) : fitColors({ text:'LÉA
 let sel = 'all';
 const money = v => new Intl.NumberFormat(locale(lang), { style:'currency', currency:CATALOGUE.currency }).format(v);
 const cm = mm => (mm/10).toLocaleString(locale(lang));
-const viewer = createViewer($('view'));
+const viewer = createViewer($('view'), { zoom: false });
 
 function texts(){
   const t = T[lang];
@@ -159,18 +165,24 @@ function texts(){
 }
 function drawSizes(){
   const t = T[lang];
-  $('sizes').innerHTML = CATALOGUE.sizes.map(s => `<button type="button" data-h="${s.h}" aria-pressed="${s.h === O.h}">${cm(s.h)} cm<small>${money(s.price)} ${t.perLetter}</small></button>`).join('');
+  $('sizes').innerHTML = CATALOGUE.sizes.map(s => `<button type="button" data-h="${s.h}" aria-pressed="${s.h === O.h}">${cm(s.h)} cm<small>${money(s.price)}</small></button>`).join('');
+  $('sizenote').textContent = t.perLetter;
 }
 function drawText(){
   const t = T[lang], chars = lettersOf(O.text), bad = [...new Set(chars.filter(c => !isAllowed(c)))];
-  const msg = bad.length ? t.badChars(bad.join(' ')) : chars.length > CATALOGUE.maxLetters ? t.tooMany : t.nameMsg(chars.length);
-  $('txtmsg').textContent = msg; $('txtmsg').className = 'msg' + (bad.length || chars.length > CATALOGUE.maxLetters ? ' w' : '');
+  // tous les avertissements à la fois (avant, un caractère refusé masquait le dépassement de la limite)
+  const ok = chars.filter(isAllowed).length;
+  const parts = [];
+  if (bad.length) parts.push(t.badChars(bad.join(' ')));
+  if (ok > CATALOGUE.maxLetters) parts.push(t.tooMany);
+  const msg = parts.length ? parts.join(' · ') : t.nameMsg(ok);
+  $('txtmsg').textContent = msg; $('txtmsg').className = 'msg' + (parts.length ? ' w' : '');
 }
 function drawLetters(){
   const t = T[lang], chars = lettersOf(O.text);
   if (sel !== 'all' && sel >= chars.length) sel = 'all';
   $('letters').innerHTML = `<button type="button" class="all" data-i="all" aria-pressed="${sel === 'all'}">${t.all}</button>` +
-    chars.map((c,i) => `<button type="button" data-i="${i}" aria-pressed="${sel === i}" aria-label="${c} · ${colorById(O.colors[i])[lang]}">${c}<i style="background:${colorById(O.colors[i]).hex}"></i></button>`).join('');
+    chars.map((c,i) => isAllowed(c) ? `<button type="button" data-i="${i}" aria-pressed="${sel === i}" aria-label="${c} · ${colorById(O.colors[i])[lang]}">${c}<i style="background:${colorById(O.colors[i]).hex}"></i></button>` : '').join('');
   const cur = sel === 'all' ? (O.colors.every(c => c === O.colors[0]) ? O.colors[0] : null) : O.colors[sel];
   $('sw').innerHTML = CATALOGUE.colors.map(c => `<button type="button" data-c="${c.id}" aria-pressed="${c.id === cur}"><i style="background:${c.hex}"></i>${c[lang]}</button>`).join('');
 }
