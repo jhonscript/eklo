@@ -118,10 +118,10 @@ td a{color:var(--teal);font-weight:600;cursor:pointer}
 </main>
 
 <script type="module">
-import { buildLetters, createViewer, threeMF, stl, save, zip, TOL } from '../lib/gonfle.js?v=26';
-import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, spacesBefore } from '../lib/catalogue.js?v=26';
-import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=26';
-import { EKLO_BULLE, EKLO_BULLE_GONFLEE, EKLO_BULLE_RONDE } from '../lib/eklo-bulle.js?v=26';
+import { buildLetters, createViewer, threeMF, stl, save, zip, TOL } from '../lib/gonfle.js?v=27';
+import { CATALOGUE, lettersOf, isAllowed, colorById, parseOrder, fitColors, spacesBefore, finishOf, styleFor } from '../lib/catalogue.js?v=27';
+import { detectLang, langSwitcher, applyTexts, locale } from '../lib/i18n.js?v=27';
+import { EKLO_BULLE, EKLO_BULLE_GONFLEE, EKLO_BULLE_RONDE } from '../lib/eklo-bulle.js?v=27';
 
 const T = {
   fr: {
@@ -140,7 +140,7 @@ const T = {
     ok:'Mesure ✓ · 1 pièce ✓', body:'corps', dash:'trait d’union, à mi-hauteur', tooMany:(n,m)=>`${n} lettres : le client n’a payé que les ${m} premières.`, okMulti:n=>`Mesure ✓ · ${n} pièces (accent à coller)`, check:'À vérifier', valid:'Validé', ignored:'Ignoré', empty:'Écrivez au moins une lettre.',
     iHeight:(g,w)=>`hauteur ${g} mm ≠ ${w} mm`, iBed:'dépasse le plateau 256 mm', iPieces:n=>`${n} morceaux séparés`, iHoles:(g,w)=>`${g} trou(s) au lieu de ${w}`, iMesh:n=>`maillage : ${n} arête(s) à réparer (Bambu Studio le fait seul)`,
     status:(n,h,tol)=>`${n} pièce(s), chacune mesurée à ${h} mm de haut (± ${tol} mm), toutes tiennent sur le plateau.`, total:g=>`Filament total ~${g} g.`,
-    prod:'Fiche de production', prodLetters:(n,cm)=>`${n} lettre(s) de ${cm} cm`, texOn:'Finition <b>texturée</b> : activer « Fuzzy skin » sur toutes les pièces', texOff:'Finition lisse',
+    prod:'Fiche de production', prodLetters:(n,cm)=>`${n} lettre(s) de ${cm} cm`, texOn:'Finition <b>texturée</b> : activer « Fuzzy skin » sur toutes les pièces', texOff:'Finition lisse', glossOn:'Finition <b>brillant céramique</b> : couche adaptative, puis ponçage 120→220, apprêt garnissant (2–3 couches, ponçage 320–400), peinture, vernis brillant (2K : masque respiratoire)',
   },
   en: {
     title:'Éklo · Puffy letters workshop', sub:'Exact height, verified, ready for Bambu Studio',
@@ -158,7 +158,7 @@ const T = {
     ok:'Size ✓ · 1 part ✓', body:'body', dash:'hyphen, sits mid-height', tooMany:(n,m)=>`${n} letters: the customer only paid for the first ${m}.`, okMulti:n=>`Size ✓ · ${n} parts (accent to glue)`, check:'Check', valid:'Validated', ignored:'Skipped', empty:'Type at least one letter.',
     iHeight:(g,w)=>`height ${g} mm ≠ ${w} mm`, iBed:'larger than the 256 mm plate', iPieces:n=>`${n} separate pieces`, iHoles:(g,w)=>`${g} hole(s) instead of ${w}`, iMesh:n=>`mesh: ${n} edge(s) to repair (Bambu Studio does it automatically)`,
     status:(n,h,tol)=>`${n} part(s), each measured at ${h} mm tall (± ${tol} mm), all fit on the plate.`, total:g=>`Total filament ~${g} g.`,
-    prod:'Production sheet', prodLetters:(n,cm)=>`${n} letter(s) at ${cm} cm`, texOn:'<b>Textured</b> finish: turn on “Fuzzy skin” for all parts', texOff:'Smooth finish',
+    prod:'Production sheet', prodLetters:(n,cm)=>`${n} letter(s) at ${cm} cm`, texOn:'<b>Textured</b> finish: turn on “Fuzzy skin” for all parts', texOff:'Smooth finish', glossOn:'<b>Glossy ceramic</b> finish: adaptive layer height, then sand 120→220, filler primer (2–3 coats, sand 320–400), paint, gloss clear coat (2K: wear a respirator)',
   },
   es: {
     title:'Éklo · Taller de letras infladas', sub:'Altura exacta, verificada, lista para Bambu Studio',
@@ -176,7 +176,7 @@ const T = {
     ok:'Medida ✓ · 1 pieza ✓', body:'cuerpo', dash:'guion, va a media altura', tooMany:(n,m)=>`${n} letras: el cliente solo pagó las primeras ${m}.`, okMulti:n=>`Medida ✓ · ${n} piezas (acento para pegar)`, check:'Revisar', valid:'Validado', ignored:'Omitido', empty:'Escribe al menos una letra.',
     iHeight:(g,w)=>`altura ${g} mm ≠ ${w} mm`, iBed:'no cabe en la cama de 256 mm', iPieces:n=>`${n} piezas separadas`, iHoles:(g,w)=>`${g} hueco(s) en vez de ${w}`, iMesh:n=>`malla: ${n} arista(s) por reparar (Bambu Studio lo hace solo)`,
     status:(n,h,tol)=>`${n} pieza(s), cada una medida a ${h} mm de alto (± ${tol} mm), todas caben en la cama.`, total:g=>`Filamento total ~${g} g.`,
-    prod:'Hoja de producción', prodLetters:(n,cm)=>`${n} letra(s) de ${cm} cm`, texOn:'Acabado <b>texturizado</b>: activar “Fuzzy skin” en todas las piezas', texOff:'Acabado liso',
+    prod:'Hoja de producción', prodLetters:(n,cm)=>`${n} letra(s) de ${cm} cm`, texOn:'Acabado <b>texturizado</b>: activar “Fuzzy skin” en todas las piezas', texOff:'Acabado liso', glossOn:'Acabado <b>brillante cerámica</b>: altura de capa adaptativa, luego lijar 120→220, imprimación de relleno (2–3 manos, lijar 320–400), pintura, barniz brillante (2K: usar respirador)',
   },
 };
 
@@ -195,8 +195,9 @@ const FONTS = [
   {id:'gluten',  label:'Gluten', f:'Gluten', w:900, fat:4},
 ];
 let lang = detectLang(), t = T[lang];
-const STYLE = () => ({ font:'eklo', puff:CATALOGUE.puff, fat:CATALOGUE.fat, wide:CATALOGUE.wide, smooth:CATALOGUE.smooth, profile:CATALOGUE.profile, round:CATALOGUE.round, swell:CATALOGUE.swell||0 });
-const S = { text:'EKLO', h:150, q:'std', colors:[], tex:'lisse', ...STYLE() };
+// style Éklo + ajustement de la finition (brillant céramique : dessus plus rond)
+const STYLE = tex => ({ font:'eklo', ...styleFor(tex) });
+const S = { text:'EKLO', h:150, q:'std', colors:[], tex:'lisse', ...STYLE('lisse') };
 fitColors(S);
 let sel = 'all';
 const cm = mm => fmt(mm/10, mm%10 ? 1 : 0);
@@ -209,7 +210,7 @@ function chips(el, opts, get, set){
   return draw;
 }
 const drawHp = chips($('hp'), ()=>CATALOGUE.sizes.map(s=>[s.h, `${cm(s.h)} cm`]), ()=>S.h, v=>{ S.h=+v; $('h').value=v; labels(); schedule(); });
-const drawTex = chips($('tex'), ()=>CATALOGUE.textures.map(x=>[x.id, x[lang]]), ()=>S.tex, v=>{ S.tex=v; paint(); renderProd(); });
+const drawTex = chips($('tex'), ()=>CATALOGUE.textures.map(x=>[x.id, x[lang]]), ()=>S.tex, v=>{ const was = styleFor(S.tex).round; S.tex=v; if (S.font==='eklo' && styleFor(v).round !== was) { S.round = styleFor(v).round; syncInputs(); schedule(); } else { paint(); renderProd(); } });
 const drawQ = chips($('q'), ()=>[['std',t.std],['fine',t.fine]], ()=>S.q, v=>{ S.q=v; schedule(); });
 function drawColors(){
   const chars = lettersOf(S.text);
@@ -225,11 +226,11 @@ function syncInputs(){ $('txt').value=S.text; $('h').value=S.h; $('puff').value=
 $('wide').oninput = e => { S.wide=+e.target.value; labels(); schedule(); };
 $('smooth').oninput = e => { S.smooth=+e.target.value; labels(); schedule(); };
 $('round').oninput = e => { S.round=+e.target.value/100; labels(); schedule(); };
-$('reset').onclick = () => { Object.assign(S, STYLE()); syncInputs(); schedule(); };
+$('reset').onclick = () => { Object.assign(S, STYLE(S.tex)); syncInputs(); schedule(); };
 $('txt').oninput = e => { S.text = e.target.value.toUpperCase(); fitColors(S); drawColors(); schedule(); };
 // chaque police a sa « rondeur » conseillée (Éklo Bulle : 0, le trait donne déjà la graisse)
 // chaque police apporte ses réglages conseillés (alphabets Éklo : font.style ; polices Google : rondeur 4 %)
-$('font').onchange = e => { S.font = e.target.value; const f = FONTS.find(x=>x.id===S.font); Object.assign(S, { swell:0 }, f.style || { puff:25, fat:f.fat ?? 4, wide:100, smooth:0, profile:'circle', round:0.5 }); syncInputs(); schedule(); };
+$('font').onchange = e => { S.font = e.target.value; const f = FONTS.find(x=>x.id===S.font); Object.assign(S, { swell:0 }, f.id==='eklo' ? styleFor(S.tex) : f.style || { puff:25, fat:f.fat ?? 4, wide:100, smooth:0, profile:'circle', round:0.5 }); syncInputs(); schedule(); };
 $('h').oninput = e => { const v=+e.target.value; if(v>=30 && v<=256){ S.h=v; drawHp(); labels(); schedule(); } };
 $('puff').oninput = e => { S.puff=+e.target.value; labels(); schedule(); };
 $('fat').oninput = e => { S.fat=+e.target.value; labels(); schedule(); };
@@ -241,7 +242,7 @@ $('load').onclick = () => {
     const u = new URL($('link').value.trim());
     if (!u.searchParams.get('t')) throw 0;
     const o = parseOrder(u.search);
-    Object.assign(S, { text:o.text, h:o.h, colors:o.colors, tex:o.tex, ...STYLE() });
+    Object.assign(S, { text:o.text, h:o.h, colors:o.colors, tex:o.tex, ...STYLE(o.tex) });
     sel = 'all'; syncInputs(); schedule(); loadedMsg = o;
   } catch { loadedMsg = 'bad'; }
   drawLinkMsg();
@@ -275,7 +276,7 @@ function renderStatus(){
     ` &nbsp;${t.total(Math.round(total))}` + (BAD.length?` <span class="pill p-w">${t.ignored}</span> ${esc(BAD.join(' '))}`:'');
 }
 const colorOf = k => colorById(S.colors[IDX[k]]);
-function paint(){ viewer.show(LET, LET.map((_,k)=>colorOf(k).hex), { textured: S.tex==='texture', spaceBefore: spacesBefore(S.text) }); }
+function paint(){ viewer.show(LET, LET.map((_,k)=>colorOf(k).hex), { textured: S.tex==='texture', glossy: S.tex==='brillant', spaceBefore: spacesBefore(S.text) }); }
 function renderTable(){
   $('rows').innerHTML = LET.map((l,k)=>`<tr><td><b>${l.ch}</b></td><td>${fmt(l.w)} mm</td><td><b>${fmt(l.h)} mm</b>${l.ch==='-' ? ` <span class="note">(${t.dash})</span>` : l.body && Math.abs(l.body-l.h)>0.5 ? ` <span class="note">(${t.body} ${fmt(l.body)})</span>` : ''}</td><td>${fmt(l.t)} mm</td><td>${Math.round(l.grams)} g</td><td>${l.issues.length?`<span class="pill p-w">${t.check}</span>`:`<span class="pill p-ok">${l.pieces>1 ? t.okMulti(l.pieces) : t.ok}</span>`}</td><td><span class="dot" style="background:${colorOf(k).hex}"></span>${colorOf(k)[lang]} · <a data-k="${k}" data-f="3mf">3MF</a> · <a data-k="${k}" data-f="stl">STL</a></td></tr>`).join('');
 }
@@ -288,12 +289,12 @@ function renderProd(){
   const by = new Map();
   LET.forEach((l,k)=>{ const c=colorOf(k); if(!by.has(c.id)) by.set(c.id,{c,letters:[],g:0}); const e=by.get(c.id); e.letters.push(l.ch); e.g+=l.grams; });
   const n = LET.length;
-  $('prod').innerHTML = `<b>${t.queue}</b> · ${t.prodLetters(n, cm(S.h))} · ${S.tex==='texture' ? t.texOn : t.texOff} · <span class="pill ${DONE.size===n?'p-ok':'p-w'}">${t.printed(DONE.size, n)}</span>
+  $('prod').innerHTML = `<b>${t.queue}</b> · ${t.prodLetters(n, cm(S.h))} · ${S.tex==='texture' ? t.texOn : S.tex==='brillant' ? t.glossOn : t.texOff} · <span class="pill ${DONE.size===n?'p-ok':'p-w'}">${t.printed(DONE.size, n)}</span>
     <ol>${LET.map((l,k)=>`<li class="${DONE.has(k)?'done':''}"><input type="checkbox" data-done="${k}" ${DONE.has(k)?'checked':''} aria-label="${t.markDone} ${l.ch}"><span class="n">${k+1}/${n}</span><span class="ch">${l.ch}</span><span><span class="dot" style="background:${colorOf(k).hex}"></span>${colorOf(k)[lang]}</span><span class="g">~${Math.round(l.grams)} g</span><a data-k="${k}" data-f="3mf">3MF</a></li>`).join('')}</ol>
     <div class="sp">${t.spools} : ${[...by.values()].map(e=>`<span class="dot" style="background:${e.c.hex}"></span>${e.c[lang]} (${e.letters.join(' ')}, ~${Math.round(e.g)} g)`).join(' &nbsp;·&nbsp; ')}</div>`;
 }
 const baseName = () => `eklo_${S.text.replace(/[^A-Za-z0-9À-ÿ-]/g,'')||'lettres'}_${S.h/10}cm`;
-const texName = () => S.tex==='texture' ? ' ' + CATALOGUE.textures.find(x=>x.id==='texture')[lang] : '';
+const texName = () => S.tex!=='lisse' ? ' ' + finishOf(S.tex)[lang] : '';
 const SAFE = { '?':'interrogation', '!':'exclamation', '-':'trait' };
 const fileName = (k, ext) => `${baseName()}_${k+1}-${LET.length}_${SAFE[LET[k].ch] || LET[k].ch}_${colorOf(k).id}.${ext}`;
 const letterMF = k => threeMF([LET[k]], [`${LET[k].ch} ${cm(S.h)}cm ${colorOf(k)[lang]}${texName()}`], { center:true });
